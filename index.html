@@ -1,3 +1,1365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM_GLOBE.EXE</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            color: #ffffff;
+            cursor: crosshair;
+            position: relative;
+        }
+        
+        /* Scanlines effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255, 255, 255, 0.03),
+                rgba(255, 255, 255, 0.03) 1px,
+                transparent 2px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        #globe-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
+        }
+
+        /* Background étoilé cosmique - corrigé */
+        #globe-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.4), transparent),
+                radial-gradient(1px 1px at 40px 70px, rgba(255,255,255,0.3), transparent),
+                radial-gradient(3px 3px at 90px 40px, rgba(255,255,255,0.2), transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.25), transparent),
+                radial-gradient(2px 2px at 160px 30px, rgba(255,255,255,0.3), transparent),
+                radial-gradient(1px 1px at 200px 90px, rgba(255,255,255,0.35), transparent),
+                radial-gradient(1px 1px at 240px 50px, rgba(255,255,255,0.2), transparent),
+                radial-gradient(2px 2px at 280px 10px, rgba(255,255,255,0.25), transparent),
+                radial-gradient(1px 1px at 320px 120px, rgba(255,255,255,0.3), transparent),
+                radial-gradient(1px 1px at 360px 60px, rgba(255,255,255,0.2), transparent);
+            background-repeat: repeat;
+            background-size: 400px 150px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        svg {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            filter: contrast(1) brightness(1.3);
+        }
+        
+        svg:active {
+            cursor: crosshair;
+        }
+        
+        /* Océan avec gradients thermiques */
+        .ocean {
+            fill: url(#oceanThermalGradient);
+            filter: url(#oceanFlow);
+        }
+        
+        /* Terre base - visible mais discrète */
+        .land {
+            fill: #1a1a1a;
+            stroke: #ffffff;
+            stroke-width: 0.4;
+            opacity: 0.8;
+        }
+        
+        /* Biomes climatiques visibles avec effets améliorés */
+        .rainforest { 
+            fill: url(#rainforestClimate);
+            opacity: 0.9;
+            filter: url(#humidityEffect);
+            mix-blend-mode: multiply;
+        }
+        .desert { 
+            fill: url(#desertClimate);
+            opacity: 0.9;
+            filter: url(#heatEffect);
+            mix-blend-mode: multiply;
+        }
+        .tundra { 
+            fill: url(#tundraClimate);
+            opacity: 0.9;
+            filter: url(#coldEffect);
+            mix-blend-mode: multiply;
+        }
+        .temperate { 
+            fill: url(#temperateClimate);
+            opacity: 0.9;
+            mix-blend-mode: multiply;
+        }
+        .savanna { 
+            fill: url(#savannaClimate);
+            opacity: 0.9;
+            filter: url(#drySeasonEffect);
+            mix-blend-mode: multiply;
+        }
+        .taiga { 
+            fill: url(#taigaClimate);
+            opacity: 0.9;
+            filter: url(#borealEffect);
+            mix-blend-mode: multiply;
+        }
+        
+        /* Grille système */
+        .graticule {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 1.9;
+            stroke-dasharray: 2,2;
+        }
+        
+        /* Points de données */
+        .location-point {
+            cursor: pointer;
+        }
+        
+        .location-point circle {
+            fill: #0066ff;
+            stroke: #ffffff;
+            stroke-width: 2;
+            filter: url(#redGlow);
+            animation: dataFlash 1.5s linear infinite;
+        }
+        
+        @keyframes dataFlash {
+            0%, 100% { 
+                r: 3;
+                opacity: 1;
+                stroke-width: 2;
+            }
+            50% { 
+                r: 5;
+                opacity: 0.7;
+                stroke-width: 4;
+            }
+        }
+        
+        .location-point:hover circle {
+            animation: none;
+            r: 6;
+            stroke-width: 3;
+            fill: #ffffff;
+            stroke: #0066ff;
+        }
+        
+        /* Overlay système mosaïque - Plus généreux et étendu */
+        #detail-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #detail-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .detail-content {
+            width: 85vw;
+            height: 95vh;
+            background: #ffffff;
+            background-image: 
+                radial-gradient(circle, #999999 1px, transparent 1px);
+            background-size: 20px 20px;
+            border: 3px solid #000000;
+            position: relative;
+            overflow-y: auto;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #000000;
+            border: 2px solid #000000;
+            color: #ffffff;
+            padding: 10px 15px;
+            cursor: crosshair;
+            transition: all 0.2s;
+            font-size: 11px;
+            letter-spacing: 1px;
+            z-index: 11;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            font-weight: 700;
+            box-shadow: none;
+        }
+        
+        .close-btn:hover {
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #000000;
+            box-shadow: 2px 2px 0px #000000;
+        }
+        
+        /* Mosaïque repensée - Layout original industriel plus spacieux */
+        .mosaic-container {
+            position: relative;
+            width: 100%;
+            min-height: 800vh;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .mosaic-block {
+            position: absolute;
+            background: #ffffff;
+            border: 2px solid #000000;
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            transition: box-shadow 0.2s;
+            box-shadow: 4px 4px 0px #000000;
+            cursor: move;
+            user-select: none;
+        }
+
+        .mosaic-block:hover {
+            box-shadow: 6px 6px 0px #000000;
+        }
+
+        .mosaic-block.dragging {
+            opacity: 0.8;
+            transform: rotate(2deg);
+            z-index: 1000;
+            box-shadow: 8px 8px 0px #000000;
+        }
+
+
+
+        .mosaic-block h3 {
+            color: #000000;
+            font-size: 14px;
+            margin: 0 0 15px 0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 700;
+            border-bottom: 2px solid #000000;
+            padding-bottom: 8px;
+            text-align: left;
+        }
+
+        .image-block {
+            width: 100%;
+            height: 200px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666;
+            cursor: move;
+            user-select: none;
+        }
+
+        .image-block.dragging {
+            opacity: 0.8;
+            transform: rotate(2deg);
+            z-index: 1000;
+        }
+
+        .mosaic-block .text-block {
+            color: #000000;
+            font-size: 11px;
+            line-height: 1.4;
+            letter-spacing: 0.5px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Tailles variées pour layout original */
+        .mosaic-small {
+            width: 280px;
+            height: 220px;
+        }
+
+        .mosaic-medium {
+            width: 320px;
+            height: 280px;
+        }
+
+        .mosaic-large {
+            width: 380px;
+            height: 320px;
+        }
+
+        .mosaic-wide {
+            width: 450px;
+            height: 240px;
+        }
+        
+        /* Aperçu terminal - supprimé l'ancien style */
+        
+        /* Effet machine à écrire centré en bas */
+        .typewriter-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0);
+            border: 0px solid #ffffff;
+            color: #ffffff;
+            padding: 15px;
+            font-size: 12px;
+            letter-spacing: 1px;
+            z-index: 15;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 0px #0066ff inset, 0 0 5px rgba(255, 255, 255, 0.2);
+            transition: opacity 0.3s ease;
+        }
+        
+        .typewriter-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .typewriter-text {
+            color: #ffffff;
+            font-weight: 200;
+            line-height: 1.4;
+            white-space: nowrap;
+            overflow: hidden;
+            min-height: 1.1em;
+            text-align: center;
+        }
+        
+        .cursor {
+            display: inline-block;
+            background-color: #ffffff;
+            width: 8px;
+            height: 14px;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        /* Menu de navigation */
+        .nav-menu {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            z-index: 10;
+        }
+        
+        .nav-menu a {
+            display: block;
+            color: #ffffff;
+            font-size: 14px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-decoration: none;
+            font-weight: 400;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            padding: 5px 0;
+            border-left: 2px solid transparent;
+            padding-left: 10px;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-menu a:hover {
+            color: #0066ff;
+            border-left-color: #0066ff;
+            padding-left: 15px;
+            text-shadow: 0 0 10px #0066ff;
+        }
+
+        /* Panneau d'informations contextuelles - Rapproché et sans cadre */
+        .biome-info-panel {
+            position: fixed;
+            top: 50%;
+            right: 40px;
+            transform: translateY(-50%);
+            width: 140px;
+            background: rgba(0, 0, 0, 0.8);
+            border: none;
+            color: #ffffff;
+            padding: 12px;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            z-index: 25;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.4;
+            transition: opacity 0.2s ease;
+        }
+
+        .biome-info-panel.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Pages texte navigation */
+        .nav-page {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 350px;
+            max-height: 70vh;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid #ffffff;
+            color: #ffffff;
+            padding: 20px;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.5;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-page.visible {
+            transform: translateX(0);
+        }
+
+        .nav-page h2 {
+            color: #0066ff;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #0066ff;
+            padding-bottom: 8px;
+        }
+
+        .nav-page p {
+            margin-bottom: 12px;
+        }
+
+        .nav-page .download-link {
+            color: #0066ff;
+            text-decoration: none;
+            border: 1px solid #0066ff;
+            padding: 8px 15px;
+            display: inline-block;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        .nav-page .download-link:hover {
+            background: #0066ff;
+            color: #000;
+        }
+
+        /* Pop-up survol simplifié - image aléatoire dans le globe */
+        #hover-preview {
+            position: fixed;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        #hover-preview.visible {
+            opacity: 1;
+        }
+
+        .hover-image-simple {
+            width: 200px;
+            height: 150px;
+            background: #1a1a1a;
+            border: 2px solid #0066ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 10px;
+            text-align: center;
+            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            box-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+        }
+
+        /* Barre de zoom discrète */
+        .zoom-indicator {
+            position: fixed;
+            bottom: 100px;
+            left: 20px;
+            width: 120px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #ffffff;
+            padding: 8px;
+            font-size: 9px;
+            letter-spacing: 0.5px;
+            z-index: 15;
+            font-family: 'JetBrains Mono', monospace;
+            color: #ffffff;
+            transition: opacity 0.3s ease;
+        }
+        
+        .zoom-indicator.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .zoom-label {
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .zoom-bar {
+            width: 100%;
+            height: 8px;
+            background: #1a1a1a;
+            border: 1px solid #ffffff;
+            position: relative;
+        }
+
+        .zoom-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffffff 0%, #cccccc 100%);
+            width: 20%;
+            transition: width 0.2s ease;
+        }
+
+        .zoom-marks {
+            position: absolute;
+            top: -3px;
+            width: 100%;
+            height: 14px;
+        }
+
+        .zoom-mark {
+            position: absolute;
+            width: 1px;
+            height: 14px;
+            background: #ffffff;
+        }
+
+        .zoom-mark:nth-child(1) { left: 0%; }
+        .zoom-mark:nth-child(2) { left: 25%; }
+        .zoom-mark:nth-child(3) { left: 50%; }
+        .zoom-mark:nth-child(4) { left: 75%; }
+        .zoom-mark:nth-child(5) { left: 100%; }
+
+        /* Bouton toggle Globe/All work */
+        .view-toggle {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 30;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #ffffff;
+            border-radius: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            overflow: hidden;
+        }
+
+        .toggle-option {
+            display: inline-block;
+            padding: 8px 20px;
+            background: transparent;
+            color: #ffffff;
+            border: none;
+            cursor: crosshair;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: inherit;
+            letter-spacing: inherit;
+        }
+
+        .toggle-option.active {
+            background: #ffffff;
+            color: #000;
+        }
+
+        .toggle-option:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .gallery-view {
+            display: none;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            background: #ffffff;
+            background-image: 
+                radial-gradient(circle, #999999 1px, transparent 1px);
+            background-size: 20px 20px;
+            padding: 0;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .gallery-view.visible {
+            display: block;
+        }
+
+        .gallery-terminate {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #000000;
+            border: 2px solid #000000;
+            color: #ffffff;
+            padding: 10px 15px;
+            cursor: crosshair;
+            transition: all 0.2s;
+            font-size: 11px;
+            letter-spacing: 1px;
+            z-index: 100;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .gallery-terminate:hover {
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #000000;
+            box-shadow: 2px 2px 0px #000000;
+        }
+
+        .gallery-container {
+            position: relative;
+            width: 100%;
+            min-height: 1500vh;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .work-cluster {
+            position: relative;
+            width: 100%;
+            min-height: 250vh;
+            margin-bottom: 150px;
+        }
+
+        .work-title {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000000;
+            color: #ffffff;
+            padding: 15px 30px;
+            z-index: 10;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 2px solid #000000;
+        }
+
+        .work-title h2 {
+            margin: 0;
+            color: #ffffff;
+        }
+        
+        h1 {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #0066ff;
+            font-size: 16px;
+            letter-spacing: 3px;
+            margin: 0;
+            z-index: 10;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            border: 1px solid #0066ff;
+            padding: 10px 15px;
+            background: #000;
+            box-shadow: 0 0 0 1px #ffffff inset;
+        }
+        
+        /* Terminal flicker */
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.98; }
+        }
+        
+        body {
+            animation: flicker 0.15s infinite linear alternate;
+        }
+        
+        /* Version mobile optimisée - Pas de pop-ups hover */
+        @media (max-width: 768px) {
+            /* Désactiver les pop-ups hover sur mobile */
+            #hover-preview {
+                display: none !important;
+            }
+            
+            /* Interface adaptée mobile */
+            h1 {
+                font-size: 11px;
+                padding: 6px 10px;
+                top: 10px;
+                left: 10px;
+            }
+            
+            .nav-menu {
+                top: 50px;
+                left: 10px;
+            }
+            
+            .nav-menu a {
+                font-size: 11px;
+                margin-bottom: 6px;
+                padding-left: 8px;
+            }
+            
+            .nav-menu a:hover {
+                padding-left: 12px;
+            }
+            
+            /* Pages navigation mobile */
+            .nav-page {
+                top: 60px;
+                right: 10px;
+                width: calc(100vw - 20px);
+                max-width: none;
+                max-height: 75vh;
+                font-size: 10px;
+                padding: 15px;
+            }
+            
+            .nav-page h2 {
+                font-size: 12px;
+            }
+            
+            /* Typewriter mobile */
+            .typewriter-container {
+                width: calc(100vw - 20px);
+                height: 40px;
+                padding: 8px;
+                font-size: 9px;
+                bottom: 10px;
+            }
+            
+            /* Points lumineux plus grands pour tactile */
+            .location-point circle {
+                r: 5 !important;
+                stroke-width: 3;
+            }
+            
+            .location-point circle:hover {
+                r: 7 !important;
+            }
+            
+            /* Zoom indicator mobile */
+            .zoom-indicator {
+                bottom: 60px;
+                left: 10px;
+                width: 100px;
+                font-size: 8px;
+                padding: 6px;
+            }
+            
+            /* Toggle buttons mobile */
+            .view-toggle {
+                top: 20px;
+                font-size: 10px;
+            }
+            
+            .toggle-option {
+                padding: 6px 15px;
+            }
+            
+            /* Overlay mobile */
+            .close-btn {
+                top: 10px;
+                right: 10px;
+                padding: 6px 12px;
+                font-size: 9px;
+            }
+            
+            #detail-overlay .detail-content {
+                width: 95vw;
+                height: 98vh;
+                padding: 30px 20px;
+            }
+            
+            .gallery-terminate {
+                top: 10px;
+                right: 10px;
+                padding: 6px 12px;
+                font-size: 9px;
+            }
+            
+            .mosaic-container {
+                padding: 20px;
+                min-height: 500vh;
+            }
+
+            .mosaic-block, .image-block {
+                position: relative !important;
+                width: 100% !important;
+                height: auto !important;
+                margin-bottom: 30px !important;
+                left: 0 !important;
+                top: 0 !important;
+            }
+
+            .image-block {
+                height: 200px !important;
+            }
+
+            .mosaic-block h3 {
+                font-size: 12px;
+                margin-bottom: 10px;
+            }
+            
+            .mosaic-block .text-block {
+                font-size: 10px;
+            }
+
+            .gallery-view {
+                padding: 0;
+            }
+            
+            .gallery-container {
+                padding: 20px;
+                min-height: 800vh;
+            }
+            
+            .work-cluster {
+                min-height: 150vh;
+                margin-bottom: 80px;
+            }
+            
+            .work-title {
+                position: relative !important;
+                left: 0 !important;
+                transform: none !important;
+                margin-bottom: 30px;
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            .work-title h2 {
+                font-size: 14px;
+                letter-spacing: 1px;
+            }
+            
+            .gallery-container .mosaic-block,
+            .gallery-container .image-block {
+                position: relative !important;
+                width: 100% !important;
+                height: auto !important;
+                margin-bottom: 30px !important;
+                left: 0 !important;
+                top: 0 !important;
+            }
+            
+            .gallery-container .image-block {
+                height: 200px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>NOT.LOST.FUTURZ</h1>
+    
+    <!-- Menu de navigation -->
+    <nav class="nav-menu">
+        <a href="#bio">Bio</a>
+        <a href="#portfolio">Portfolio</a>
+        <a href="#contact">Contact</a>
+        <a href="#manifeste">Manifeste</a>
+    </nav>
+    
+    <!-- Effet machine à écrire centré en bas -->
+    <div class="typewriter-container">
+        <div class="typewriter-text" id="typewriter-display"></div>
+        <span class="cursor"></span>
+    </div>
+
+    <!-- Barre de zoom -->
+    <div class="zoom-indicator">
+        <div class="zoom-label" id="zoom-label">Zoom x1.0</div>
+        <div class="zoom-bar">
+            <div class="zoom-fill" id="zoom-fill"></div>
+            <div class="zoom-marks">
+                <div class="zoom-mark"></div>
+                <div class="zoom-mark"></div>
+                <div class="zoom-mark"></div>
+                <div class="zoom-mark"></div>
+                <div class="zoom-mark"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pages de navigation -->
+    <div class="nav-page" id="bio-page">
+        <h2>Bio</h2>
+        <p>Artiste numérique explorant les intersections entre technologie, écologie et critique sociale.</p>
+        <p>Formé aux arts visuels et à la programmation, je développe des expériences interactives qui questionnent notre rapport au monde naturel à l'ère de l'Anthropocène.</p>
+        <p>Mes œuvres utilisent la visualisation de données, la cartographie interactive et les nouvelles technologies pour révéler les tensions entre progrès technologique et préservation environnementale.</p>
+        <p>Basé entre Paris et Berlin, je collabore avec des institutions culturelles, des laboratoires de recherche et des collectifs militants.</p>
+    </div>
+
+    <div class="nav-page" id="portfolio-page">
+        <h2>Portfolio</h2>
+        <p>Téléchargez mon portfolio complet contenant :</p>
+        <p>• Projets d'art numérique interactif<br>
+        • Visualisations de données environnementales<br>
+        • Installations multimédias<br>
+        • Collaborations artistiques<br>
+        • Documentation technique</p>
+        <a href="#" class="download-link" download>TÉLÉCHARGER PORTFOLIO.PDF</a>
+    </div>
+
+    <div class="nav-page" id="manifeste-page">
+        <h2>Manifeste</h2>
+        <p>L'art numérique ne peut plus ignorer l'urgence climatique. Face à l'effondrement écologique, nous devons repenser nos pratiques créatives.</p>
+        <p>Ni capitalisme vert ni effondrement : la création artistique doit servir l'émancipation collective et la transformation sociale.</p>
+        <p>L'esthétique de l'Anthropocène ne doit pas nous hypnotiser. Elle doit nous mobiliser.</p>
+        <p>Contre la spectacularisation de l'apocalypse, pour une art engagé dans la construction d'alternatives concrètes.</p>
+        <p>La beauté des données climatiques ne doit pas nous faire oublier leur dimension politique.</p>
+    </div>
+
+    <div class="nav-page" id="contact-page">
+        <h2>Contact</h2>
+        <p>Pour toute collaboration, commande ou information :</p>
+        <p>Email : contact@not-lost-futurz.net<br>
+        Instagram : @notlostfuturz<br>
+        GitHub : github.com/notlostfuturz</p>
+        <p>Résidences artistiques, workshops, conférences et projets collaboratifs bienvenus.</p>
+        <p>Particulièrement intéressé par les projets liant art, science et écologie.</p>
+    </div>
+    
+    <div id="hover-preview">
+        <div class="hover-image-simple">IMAGE_PREVIEW</div>
+    </div>
+
+    <!-- Panneau d'informations biome -->
+    <div class="biome-info-panel hidden" id="biome-info-panel">
+        <div id="biome-data-display"></div>
+    </div>
+    
+    <div id="globe-container">
+        <!-- Bouton toggle -->
+        <div class="view-toggle">
+            <button class="toggle-option active" id="globe-toggle">Globe</button>
+            <button class="toggle-option" id="gallery-toggle">All work</button>
+        </div>
+
+        <!-- Vue Globe (existant) -->
+        <svg id="globe">
+            <defs>
+                <!-- Gradient océan thermique inspiré nullschool -->
+                <radialGradient id="oceanThermalGradient">
+                    <stop offset="0%" style="stop-color:#C9d;stop-opacity:1" />
+                    <stop offset="30%" style="stop-color:#a9B;stop-opacity:0.8" />
+                    <stop offset="60%" style="stop-color:#a9d;stop-opacity:0.6" />
+                    <stop offset="100%" style="stop-color:#004080;stop-opacity:0.6" />
+                </radialGradient>
+                
+                <!-- Gradients climatiques pour biomes -->
+                <linearGradient id="rainforestClimate" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#006600;stop-opacity:1" />
+                    <stop offset="30%" style="stop-color:#009900;stop-opacity:1" />
+                    <stop offset="60%" style="stop-color:#00cc00;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#00ff00;stop-opacity:1" />
+                </linearGradient>
+                
+                <linearGradient id="desertClimate" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#cc6600;stop-opacity:1" />
+                    <stop offset="30%" style="stop-color:#ff8800;stop-opacity:1" />
+                    <stop offset="60%" style="stop-color:#ffaa00;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#ffcc00;stop-opacity:1" />
+                </linearGradient>
+                
+                <linearGradient id="tundraClimate" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#6666cc;stop-opacity:1" />
+                    <stop offset="30%" style="stop-color:#8888dd;stop-opacity:1" />
+                    <stop offset="60%" style="stop-color:#aaaaee;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#ccccff;stop-opacity:1" />
+                </linearGradient>
+                
+                <linearGradient id="temperateClimate" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#336633;stop-opacity:1" />
+                    <stop offset="30%" style="stop-color:#66aa66;stop-opacity:1" />
+                    <stop offset="60%" style="stop-color:#88cc88;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#aaffaa;stop-opacity:1" />
+                </linearGradient>
+                
+                <linearGradient id="savannaClimate" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#cc9900;stop-opacity:1" />
+                    <stop offset="30%" style="stop-color:#ddaa33;stop-opacity:1" />
+                    <stop offset="60%" style="stop-color:#eebb66;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#ffcc99;stop-opacity:1" />
+                </linearGradient>
+                
+                <linearGradient id="taigaClimate" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#004d4d;stop-opacity:1" />
+                    <stop offset="30%" style="stop-color:#006666;stop-opacity:1" />
+                    <stop offset="60%" style="stop-color:#008080;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#00cccc;stop-opacity:1" />
+                </linearGradient>
+                
+                <!-- Effets climatiques dynamiques améliorés -->
+                <filter id="oceanFlow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="2" result="flow" seed="1">
+                        <animate attributeName="baseFrequency" 
+                            dur="8s" 
+                            values="0.008;0.015;0.008"
+                            repeatCount="indefinite"/>
+                        <animate attributeName="seed" 
+                            dur="12s" 
+                            values="1;5;1"
+                            repeatCount="indefinite"/>
+                    </feTurbulence>
+                    <feDisplacementMap in2="flow" in="SourceGraphic" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+                    <feColorMatrix type="saturate" values="1.2"/>
+                </filter>
+                
+                <filter id="humidityEffect" x="-50%" y="-50%" width="200%" height="200%">
+                    <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="3" result="humidity" seed="3">
+                        <animate attributeName="baseFrequency" 
+                            dur="4s" 
+                            values="0.03;0.08;0.03"
+                            repeatCount="indefinite"/>
+                    </feTurbulence>
+                    <feDisplacementMap in2="humidity" in="SourceGraphic" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+                    <feColorMatrix type="matrix" values="0.8 0.2 0.1 0 0.1
+                                                         0.1 1.2 0.1 0 0.1  
+                                                         0.1 0.2 0.8 0 0.1
+                                                         0 0 0 1 0"/>
+                </filter>
+                
+                <filter id="heatEffect" x="-50%" y="-50%" width="200%" height="200%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" result="heat" seed="7">
+                        <animate attributeName="baseFrequency" 
+                            dur="1.5s" 
+                            values="0.08;0.18;0.08"
+                            repeatCount="indefinite"/>
+                    </feTurbulence>
+                    <feDisplacementMap in2="heat" in="SourceGraphic" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+                    <feColorMatrix type="matrix" values="1.3 0.2 0 0 0.1
+                                                         0.2 1.1 0 0 0.05  
+                                                         0 0.1 0.7 0 0
+                                                         0 0 0 1 0"/>
+                </filter>
+                
+                <filter id="coldEffect" x="-50%" y="-50%" width="200%" height="200%">
+                    <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="4" result="cold" seed="2">
+                        <animate attributeName="baseFrequency" 
+                            dur="6s" 
+                            values="0.02;0.05;0.02"
+                            repeatCount="indefinite"/>
+                    </feTurbulence>
+                    <feDisplacementMap in2="cold" in="SourceGraphic" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+                    <feColorMatrix type="matrix" values="0.7 0.1 0.3 0 0.1
+                                                         0.1 0.8 0.4 0 0.1  
+                                                         0.2 0.3 1.4 0 0.2
+                                                         0 0 0 1 0"/>
+                    <feGaussianBlur stdDeviation="0.5" result="blur"/>
+                </filter>
+                
+                <filter id="drySeasonEffect" x="-50%" y="-50%" width="200%" height="200%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" result="dry" seed="9">
+                        <animate attributeName="baseFrequency" 
+                            dur="3s" 
+                            values="0.05;0.12;0.05"
+                            repeatCount="indefinite"/>
+                    </feTurbulence>
+                    <feDisplacementMap in2="dry" in="SourceGraphic" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+                    <feColorMatrix type="matrix" values="1.2 0.3 0.1 0 0.1
+                                                         0.3 1.1 0.2 0 0.05  
+                                                         0.1 0.2 0.8 0 0
+                                                         0 0 0 1 0"/>
+                </filter>
+                
+                <filter id="borealEffect" x="-50%" y="-50%" width="200%" height="200%">
+                    <feTurbulence type="turbulence" baseFrequency="0.025" numOctaves="3" result="boreal" seed="4">
+                        <animate attributeName="baseFrequency" 
+                            dur="5s" 
+                            values="0.025;0.06;0.025"
+                            repeatCount="indefinite"/>
+                    </feTurbulence>
+                    <feDisplacementMap in2="boreal" in="SourceGraphic" scale="2.5" xChannelSelector="R" yChannelSelector="G"/>
+                    <feColorMatrix type="matrix" values="0.6 0.2 0.4 0 0.1
+                                                         0.2 1.0 0.6 0 0.1  
+                                                         0.3 0.4 1.2 0 0.1
+                                                         0 0 0 1 0"/>
+                </filter>
+                
+                <filter id="redGlow">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+        </svg>
+
+        <!-- Vue Galerie All work -->
+        <div class="gallery-view" id="gallery-view">
+            <button class="gallery-terminate" onclick="switchToGlobe()">[X] TERMINATE</button>
+            <div class="gallery-container" id="gallery-container">
+                <!-- Contenu généré dynamiquement -->
+            </div>
+        </div>
+        
+        <div id="preview-panel">
+            <div class="panel-content"></div>
+        </div>
+    </div>
+
+    <!-- Overlay système mosaïque -->
+    <div id="detail-overlay">
+        <div class="detail-content">
+            <!-- Contenu généré dynamiquement -->
+        </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+    
+    <script>
+        // Configuration système
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const scale = Math.min(width, height) / 2.3;
+        const sensitivity = 0.75;
+        
+        // Slogans système pour effet machine à écrire avec répétition et aléatoire
+        const slogans = [
+            "are you a pervert secretly horny for the apocalypse ?",
+            "Devenu si etranger à lui même que sa propre destruction lui apparait comme un spectacle de premier ordre",
+            "NI CAPITALISME VERT NI EFFONDREMENT",
+            "L'URGENCE CLIMATIQUE EST UNE GUERRE DE CLASSE",
+            "DÉCROISSANCE DES RICHES - PROSPÉRITÉ POUR TOUS",
+            "Non pas seulement moteur de l'histoire, mais moteur de la vie elle même",
+            "ABOLIR LA PROPRIÉTÉ PRIVÉE DES MOYENS DE DESTRUCTION"
+        ];
+        
+        let currentSloganIndex = 0;
+        let isTyping = false;
+        let sloganHistory = [];
+        
+        // Fonction pour choisir un slogan aléatoirement avec évitement de répétition immédiate
+        function getRandomSlogan() {
+            let availableSlogans = slogans.filter((_, index) => !sloganHistory.includes(index));
+            
+            // Si tous les slogans ont été utilisés récemment, remettre à zéro l'historique
+            if (availableSlogans.length === 0) {
+                sloganHistory = [];
+                availableSlogans = slogans.slice();
+            }
+            
+            const randomIndex = Math.floor(Math.random() * availableSlogans.length);
+            const selectedSloganIndex = slogans.indexOf(availableSlogans[randomIndex]);
+            
+            // Garder un historique des 3 derniers slogans utilisés
+            sloganHistory.push(selectedSloganIndex);
+            if (sloganHistory.length > 3) {
+                sloganHistory.shift();
+            }
+            
+            return selectedSloganIndex;
+        }
+        
+        // Effet machine à écrire réaliste simplifié
+        function typewriterEffect() {
+            if (isTyping) return;
+            
+            const display = document.getElementById('typewriter-display');
+            currentSloganIndex = getRandomSlogan();
+            const currentSlogan = slogans[currentSloganIndex];
+            let currentText = '';
+            let charIndex = 0;
+            
+            isTyping = true;
+            display.textContent = '';
+            
+            function typeChar() {
+                if (charIndex < currentSlogan.length) {
+                    // Vitesse de frappe plus rapide et plus fluide
+                    const typingSpeed = Math.random() * 40 + 20; // 20-60ms (plus rapide)
+                    
+                    // Parfois une pause de réflexion légère (réduite)
+                    const pauseChance = Math.random();
+                    let pauseTime = 0;
+                    
+                    if (pauseChance < 0.02) { // 2% - courte pause seulement
+                        pauseTime = Math.random() * 150 + 100;
+                    }
+                    
+                    setTimeout(() => {
+                        currentText += currentSlogan[charIndex];
+                        display.textContent = currentText;
+                        charIndex++;
+                        setTimeout(typeChar, typingSpeed);
+                    }, pauseTime);
+                } else {
+                    // Fin du message - pause avant le suivant
+                    setTimeout(() => {
+                        // Effacement progressif plus rapide
+                        function eraseText() {
+                            if (currentText.length > 0) {
+                                currentText = currentText.slice(0, -1);
+                                display.textContent = currentText;
+                                setTimeout(eraseText, 20); // Plus rapide
+                            } else {
+                                // Répétition aléatoire du même slogan ou passage au suivant
+                                const shouldRepeat = Math.random() < 0.3; // 30% de chance de répéter
+                                if (!shouldRepeat) {
+                                    currentSloganIndex = getRandomSlogan();
+                                }
+                                isTyping = false;
+                                setTimeout(typewriterEffect, 300); // Pause plus courte
+                            }
+                        }
+                        
+                        setTimeout(eraseText, 2000); // Attendre 2s avant d'effacer (réduit)
+                    }, 100);
+                }
+            }
+            
+            // Démarrer avec une petite pause
+            setTimeout(typeChar, 200);
+        }
+        
+        // Initialiser l'effet machine à écrire
+        setTimeout(typewriterEffect, 100);
+
+        // Gestion des pages de navigation
+        function showNavPage(pageId) {
+            // Masquer toutes les pages
+            document.querySelectorAll('.nav-page').forEach(page => {
+                page.classList.remove('visible');
+            });
+            
+            // Afficher la page demandée
+            const targetPage = document.getElementById(pageId + '-page');
+            if (targetPage) {
+                targetPage.classList.add('visible');
+            }
+        }
+
+        // Event listeners pour les liens de navigation
+        document.querySelector('a[href="#bio"]').addEventListener('click', (e) => {
+            e.preventDefault();
+            showNavPage('bio');
+        });
+
+        document.querySelector('a[href="#portfolio"]').addEventListener('click', (e) => {
+            e.preventDefault();
+            showNavPage('portfolio');
+        });
+
+        document.querySelector('a[href="#contact"]').addEventListener('click', (e) => {
+            e.preventDefault();
+            showNavPage('contact');
+        });
+
+        document.querySelector('a[href="#manifeste"]').addEventListener('click', (e) => {
+            e.preventDefault();
+            showNavPage('manifeste');
+        });
+
+        // Fermer les pages en cliquant ailleurs
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-page') && !e.target.closest('.nav-menu')) {
+                document.querySelectorAll('.nav-page').forEach(page => {
+                    page.classList.remove('visible');
+                });
+            }
+        });
+
+        // Système de toggle Globe/All work
+        function switchToGlobe() {
+            document.getElementById('globe').style.display = 'block';
+            document.getElementById('gallery-view').classList.remove('visible');
+            document.getElementById('globe-toggle').classList.add('active');
+            document.getElementById('gallery-toggle').classList.remove('active');
+            
+            // Réafficher typewriter et zoom
+            document.querySelector('.typewriter-container').classList.remove('hidden');
+            document.querySelector('.zoom-indicator').classList.remove('hidden');
+            
+            // Réactiver l'animation du globe
+            autoRotate = true;
+        }
+
+        function switchToGallery() {
+            document.getElementById('globe').style.display = 'none';
+            document.getElementById('gallery-view').classList.add('visible');
+            document.getElementById('globe-toggle').classList.remove('active');
+            document.getElementById('gallery-toggle').classList.add('active');
+            
+            // Générer le contenu de la galerie
+            generateAllWorkContent();
+            
+            // Masquer typewriter et zoom
+            document.querySelector('.typewriter-container').classList.add('hidden');
+            document.querySelector('.zoom-indicator').classList.add('hidden');
+            
+            // Masquer les pop-ups et info biome
+            document.getElementById('hover-preview').classList.remove('visible');
+            document.getElementById('biome-info-panel').classList.add('hidden');
+            
+            // Arrêter l'animation du globe
+            autoRotate = false;
+        }
+
+        // Event listeners pour les boutons toggle
+        document.getElementById('globe-toggle').addEventListener('click', switchToGlobe);
+        document.getElementById('gallery-toggle').addEventListener('click', switchToGallery);
+
 // Générateur de contenu pour la page ALL WORK - Version améliorée
 function generateAllWorkContent() {
     const container = document.getElementById('gallery-container');
@@ -101,3 +1463,855 @@ function generateAllWorkContent() {
     
     container.innerHTML = html;
 }
+        // Système de sauvegarde des positions personnalisées
+        let customPositions = {};
+        let isDragging = false;
+        let currentDragElement = null;
+        let dragOffset = { x: 0, y: 0 };
+
+        // Charger les positions sauvegardées (en mémoire pour cette session)
+        function loadCustomPositions() {
+            // Les positions sont stockées en mémoire pendant la session
+            if (!window.portfolioPositions) {
+                window.portfolioPositions = {};
+            }
+            customPositions = window.portfolioPositions;
+        }
+
+        // Sauvegarder les positions (en mémoire pour cette session)
+        function saveCustomPositions() {
+            window.portfolioPositions = customPositions;
+        }
+
+        // Initialiser le drag & drop
+        function initDragAndDrop() {
+            const blocks = document.querySelectorAll('.mosaic-block, .image-block');
+            
+            blocks.forEach(block => {
+                block.draggable = true;
+                
+                block.addEventListener('dragstart', (e) => {
+                    isDragging = true;
+                    currentDragElement = block;
+                    block.classList.add('dragging');
+                    
+                    const rect = block.getBoundingClientRect();
+                    const containerRect = block.parentElement.getBoundingClientRect();
+                    
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                    
+                    // Créer une image de drag transparente
+                    const dragImage = new Image();
+                    dragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
+                    e.dataTransfer.setDragImage(dragImage, 0, 0);
+                });
+                
+                block.addEventListener('dragend', (e) => {
+                    isDragging = false;
+                    block.classList.remove('dragging');
+                    currentDragElement = null;
+                });
+            });
+            
+            // Gestion du drop sur le container
+            const container = document.querySelector('.mosaic-container');
+            if (container) {
+                container.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+                
+                container.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    
+                    if (currentDragElement) {
+                        const containerRect = container.getBoundingClientRect();
+                        const newX = e.clientX - containerRect.left - dragOffset.x;
+                        const newY = e.clientY - containerRect.top - dragOffset.y + container.scrollTop;
+                        
+                        // Contraintes pour éviter de sortir du container
+                        const maxX = container.clientWidth - currentDragElement.offsetWidth;
+                        const maxY = container.scrollHeight - currentDragElement.offsetHeight;
+                        
+                        const finalX = Math.max(0, Math.min(newX, maxX));
+                        const finalY = Math.max(0, Math.min(newY, maxY));
+                        
+                        // Appliquer la nouvelle position
+                        currentDragElement.style.left = finalX + 'px';
+                        currentDragElement.style.top = finalY + 'px';
+                        
+                        // Sauvegarder la position
+                        const blockId = currentDragElement.dataset.blockId;
+                        if (blockId) {
+                            if (!customPositions[getCurrentLocationId()]) {
+                                customPositions[getCurrentLocationId()] = {};
+                            }
+                            customPositions[getCurrentLocationId()][blockId] = {
+                                x: finalX,
+                                y: finalY
+                            };
+                            saveCustomPositions();
+                        }
+                    }
+                });
+            }
+        }
+
+        // Obtenir l'ID de la location courante
+        function getCurrentLocationId() {
+            return document.querySelector('.overlay-title')?.textContent || 'default';
+        }
+
+        // Appliquer les positions personnalisées
+        function applyCustomPositions(locationId) {
+            if (customPositions[locationId]) {
+                Object.keys(customPositions[locationId]).forEach(blockId => {
+                    const block = document.querySelector(`[data-block-id="${blockId}"]`);
+                    if (block) {
+                        const pos = customPositions[locationId][blockId];
+                        block.style.left = pos.x + 'px';
+                        block.style.top = pos.y + 'px';
+                    }
+                });
+            }
+        }
+
+        // Système d'informations contextuelles simplifié
+        const biomeDataInfo = {
+            ocean: { temp: [-2, 30], hum: [95, 100], pol: [5, 45], pop: [0, 0], bio: [15000, 250000], prec: [0, 0] },
+            rainforest: { temp: [20, 35], hum: [77, 88], pol: [15, 85], pop: [1, 25], bio: [40000, 100000], prec: [1500, 4000] },
+            desert: { temp: [10, 50], hum: [10, 30], pol: [2, 25], pop: [0, 5], bio: [500, 3000], prec: [0, 250] },
+            tundra: { temp: [-40, 18], hum: [60, 80], pol: [1, 15], pop: [0, 0.1], bio: [200, 1500], prec: [150, 400] },
+            temperate: { temp: [-5, 30], hum: [50, 75], pol: [25, 120], pop: [10, 200], bio: [3000, 15000], prec: [500, 1500] },
+            savanna: { temp: [15, 35], hum: [35, 70], pol: [8, 55], pop: [2, 35], bio: [8000, 25000], prec: [300, 1200] },
+            taiga: { temp: [-50, 20], hum: [55, 75], pol: [3, 35], pop: [0, 2], bio: [2000, 8000], prec: [400, 850] }
+        };
+
+        function randRange(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function formatBigNumber(num) {
+            if (num >= 1000000) return Math.floor(num / 1000000) + 'M';
+            if (num >= 1000) return Math.floor(num / 1000) + 'K';
+            return Math.floor(num);
+        }
+
+        function updateBiomeInfoPanel(biomeType, lat, lon) {
+            const data = biomeDataInfo[biomeType] || biomeDataInfo.ocean;
+            const panel = document.getElementById('biome-info-panel');
+            const display = document.getElementById('biome-data-display');
+            
+            const temp = randRange(data.temp[0], data.temp[1]);
+            const hum = randRange(data.hum[0], data.hum[1]);
+            const pol = randRange(data.pol[0], data.pol[1]);
+            const pop = randRange(data.pop[0] * 10, data.pop[1] * 10) / 10;
+            const bio = randRange(data.bio[0], data.bio[1]);
+            const prec = randRange(data.prec[0], data.prec[1]);
+            
+            display.innerHTML = `
+                TEMP: ${temp}°C<br>
+                HUM: ${hum}%<br>
+                POL: ${pol}ppm<br>
+                POP: ${formatBigNumber(pop)}/km²<br>
+                BIO: ${formatBigNumber(bio)}sp<br>
+                PREC: ${prec}mm<br>
+                <br>
+                ${lat.toFixed(1)}°N ${lon.toFixed(1)}°E
+            `;
+            
+            panel.classList.remove('hidden');
+        }
+
+        // Fonction améliorée pour détecter les biomes UNIQUEMENT dans la circonférence visible
+        function detectBiomeFromCursor(point) {
+            const coords = projection.invert(point);
+            if (!coords) return null;
+            
+            const [lon, lat] = coords;
+            const projectedPoint = projection([lon, lat]);
+            
+            // Vérifier si le point est dans la sphère visible
+            if (!projectedPoint) return null;
+            
+            // Calculer la distance depuis le centre de la projection
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const currentScale = scale * currentZoom;
+            const radius = currentScale;
+            
+            const distanceFromCenter = Math.sqrt(
+                Math.pow(projectedPoint[0] - centerX, 2) + 
+                Math.pow(projectedPoint[1] - centerY, 2)
+            );
+            
+            // Si on est en dehors de la circonférence visible, ne pas afficher les infos
+            if (distanceFromCenter > radius) return null;
+            
+            // Logique de détection des biomes (identique à l'originale)
+            if (Math.abs(lat) > 66.5) return { biome: 'tundra', lat, lon };
+            if (Math.abs(lat) > 50) return { biome: 'taiga', lat, lon };
+            
+            if (lat > -10 && lat < 10) {
+                if ((lon > -80 && lon < -35) || (lon > 10 && lon < 30) || (lon > 95 && lon < 140)) {
+                    return { biome: 'rainforest', lat, lon };
+                }
+            }
+            
+            if ((lat > 15 && lat < 35 && lon > -20 && lon < 65) || 
+                (lat > -35 && lat < -15 && lon > 115 && lon < 145)) {
+                return { biome: 'desert', lat, lon };
+            }
+            
+            if (lat > -25 && lat < 15 && lon > 15 && lon < 50) {
+                return { biome: 'savanna', lat, lon };
+            }
+            
+            const distanceToLand = Math.min(Math.abs(lat - 60), Math.abs(lon % 40));
+            if (distanceToLand > 10) return { biome: 'ocean', lat, lon };
+            
+            return { biome: 'temperate', lat, lon };
+        }
+        
+        // Données système avec vraies images - COORDONNÉES MODIFIÉES
+        const locations = [
+            {
+                id: 'mexico_death_valley',
+                name: 'DESERT_MATRIX.001',
+                coords: [-106.0, 28.0], // Désert de Chihuahua, Mexique
+                preview: {
+                    text: 'DESERT_EXTREME - MEXICO_ZONE',
+                    image: 'images/locations/location1/main.jpg'
+                },
+                detail: {
+                    title: 'MEXICO_DESERT_SYSTEM.LOG',
+                    sections: [
+                        {
+                            subtitle: 'SPECIES_COUNT',
+                            text: 'DATABASE: 40,000 PLANT_SPECIES | 1,300 BIRD_TYPES | 3,000 FISH_VARIANTS. SYSTEM_STATUS: CRITICAL_IMPORTANCE.',
+                            imagePlaceholder: 'images/locations/location1/detail1.jpg'
+                        },
+                        {
+                            subtitle: 'OXYGEN_OUTPUT',
+                            text: 'PROCESSING: 20% GLOBAL_O2_PRODUCTION. WATER_DISCHARGE: 209,000M³/SEC. STATUS: ACTIVE_MONITORING.',
+                            imagePlaceholder: 'images/locations/location1/detail2.jpg'
+                        }
+                    ]
+                }
+            },
+            {
+                id: 'subsaharan_africa',
+                name: 'SAVANNA_PROTOCOL.002',
+                coords: [2.0, 12.0], // Afrique subsaharienne (Niger/Mali)
+                preview: {
+                    text: 'SAHEL_MATRIX - SUBSAHARA',
+                    image: 'images/locations/location2/main.jpg'
+                },
+                detail: {
+                    title: 'SUBSAHARA_SYSTEM.LOG',
+                    sections: [
+                        {
+                            subtitle: 'EXTREME_CONDITIONS',
+                            text: 'TEMP_RANGE: 50°C_DAY | 0°C_NIGHT. PRECIPITATION: <25MM/YEAR. SURVIVAL_MODE: ACTIVATED.',
+                            imagePlaceholder: 'images/locations/location2/detail1.jpg'
+                        },
+                        {
+                            subtitle: 'ADAPTED_LIFEFORMS',
+                            text: 'SPECIES_COUNT: 3000+ ADAPTED_UNITS. FENNEC.EXE | ADDAX.SYS | ROSE_OF_JERICHO.DLL ACTIVE.',
+                            imagePlaceholder: 'images/locations/location2/detail2.jpg'
+                        }
+                    ]
+                }
+            },
+            {
+                id: 'sarthe_france',
+                name: 'TEMPERATE_NETWORK.003',
+                coords: [0.2, 48.0], // Sarthe, France
+                preview: {
+                    text: 'TEMPERATE_ZONE - SARTHE_FR',
+                    image: 'images/locations/location3/main.jpg'
+                },
+                detail: {
+                    title: 'SARTHE_SYSTEM.LOG',
+                    sections: [
+                        {
+                            subtitle: 'NORDIC_ECOSYSTEM',
+                            text: 'CONIFER_DOMINANT: SPRUCE.EXE | FIR.SYS | LARCH.DLL. TEMP_RANGE: -50°C TO +20°C.',
+                            imagePlaceholder: 'images/locations/location3/detail1.jpg'
+                        },
+                        {
+                            subtitle: 'FAUNA_DATABASE',
+                            text: 'ACTIVE_SPECIES: BEAR.SYS | LYNX.EXE | MOOSE.DLL | WOLF.NET. MIGRATION_PATTERNS: MONITORED.',
+                            imagePlaceholder: 'images/locations/location3/detail2.jpg'
+                        }
+                    ]
+                }
+            },
+            {
+                id: 'china_central',
+                name: 'ASIA_CLUSTER.004',
+                coords: [104.0, 35.0], // Chine centrale
+                preview: {
+                    text: 'CHINA_PROTOCOL - CENTRAL_ZONE',
+                    image: 'images/locations/location4/main.jpg'
+                },
+                detail: {
+                    title: 'CHINA_SYSTEM.LOG',
+                    sections: [
+                        {
+                            subtitle: 'MIGRATION_DATA',
+                            text: 'WILDEBEEST: 1.5M_UNITS | ZEBRA: 200K_UNITS. DISTANCE: 3000KM_ANNUAL. STATUS: TRACKING.',
+                            imagePlaceholder: 'images/locations/location4/detail1.jpg'
+                        },
+                        {
+                            subtitle: 'PREDATOR_ARRAY',
+                            text: 'LION: 3000_UNITS | LEOPARD: 1000_UNITS | CHEETAH: 500_UNITS. BALANCE: MAINTAINED.',
+                            imagePlaceholder: 'images/locations/location4/detail2.jpg'
+                        }
+                    ]
+                }
+            },
+            {
+                id: 'paris_france',
+                name: 'URBAN_MAINFRAME.005',
+                coords: [2.35, 48.85], // Paris, France
+                preview: {
+                    text: 'URBAN_SYSTEM - PARIS_MEGALOPOLIS',
+                    image: 'images/locations/location5/main.jpg'
+                },
+                detail: {
+                    title: 'PARIS_SYSTEM.LOG',
+                    sections: [
+                        {
+                            subtitle: 'MARINE_DATABASE',
+                            text: 'CORAL_TYPES: 600 | FISH_SPECIES: 1625 | SHARK_VARIANTS: 133. ECOSYSTEM: COMPLEX.',
+                            imagePlaceholder: 'images/locations/location5/detail1.jpg'
+                        },
+                        {
+                            subtitle: 'SYSTEM_WARNING',
+                            text: 'TEMPERATURE_THREAT: ACTIVE. BLEACHING: 50%_SINCE_1995. STATUS: CRITICAL_MONITORING.',
+                            imagePlaceholder: 'images/locations/location5/detail2.jpg'
+                        }
+                    ]
+                }
+            },
+            {
+                id: 'atlantic_ocean',
+                name: 'OCEAN_TERMINAL.006',
+                coords: [-30.0, 35.0], // Océan Atlantique
+                preview: {
+                    text: 'OCEAN_MATRIX - ATLANTIC_SECTOR',
+                    image: 'images/locations/location6/main.jpg'
+                },
+                detail: {
+                    title: 'ATLANTIC_SYSTEM.LOG',
+                    sections: [
+                        {
+                            subtitle: 'POLAR_CONDITIONS',
+                            text: 'TEMP_RECORD: -89.2°C. FRESHWATER_STORAGE: 90%_GLOBAL_RESERVES. STATUS: MONITORED.',
+                            imagePlaceholder: 'images/locations/location6/detail1.jpg'
+                        },
+                        {
+                            subtitle: 'EXTREME_LIFE',
+                            text: 'EMPEROR_PENGUIN.EXE | WEDDELL_SEAL.SYS | ANTARCTIC_KRILL.DLL. FOOD_CHAIN: BASE_LEVEL.',
+                            imagePlaceholder: 'images/locations/location6/detail2.jpg'
+                        }
+                    ]
+                }
+            }
+        ];
+        
+        // Images système supplémentaires avec placeholders
+        const systemImagePlaceholders = [
+            'systemImages[0] - Image système nature 1',
+            'systemImages[1] - Image système nature 2', 
+            'systemImages[2] - Image système nature 3',
+            'systemImages[3] - Image système nature 4',
+            'systemImages[4] - Image système nature 5',
+            'systemImages[5] - Image système nature 6',
+            'systemImages[6] - Image système nature 7',
+            'systemImages[7] - Image système nature 8'
+        ];
+        
+        // Initialisation système SVG
+        const svg = d3.select('#globe');
+        const g = svg.append('g');
+        
+        const projection = d3.geoOrthographic()
+            .scale(scale)
+            .translate([width / 2, height / 2])
+            .clipAngle(90);
+            
+        const path = d3.geoPath().projection(projection);
+        const graticule = d3.geoGraticule();
+        
+        // Groupes système
+        const oceanGroup = g.append('g');
+        const graticuleGroup = g.append('g');
+        const landGroup = g.append('g');
+        const biomesGroup = g.append('g');
+        const pointsGroup = g.append('g');
+        
+        // Variables système
+        let autoRotate = true;
+        let countriesData = null;
+        let currentZoom = 1;
+        
+        // Configuration zoom
+        const zoom = d3.zoom()
+            .scaleExtent([0.5, 8])
+            .on('zoom', handleZoom);
+        
+        function handleZoom(event) {
+            currentZoom = event.transform.k;
+            const newScale = scale * currentZoom;
+            projection.scale(newScale);
+            updateAll();
+            updateZoomIndicator();
+        }
+
+        // Fonction pour mettre à jour l'indicateur de zoom
+        function updateZoomIndicator() {
+            const zoomLabel = document.getElementById('zoom-label');
+            const zoomFill = document.getElementById('zoom-fill');
+            
+            // Calculer le pourcentage de zoom (0.5x à 8x)
+            const minZoom = 0.5;
+            const maxZoom = 8;
+            const zoomPercent = ((currentZoom - minZoom) / (maxZoom - minZoom)) * 100;
+            
+            // Mettre à jour le label
+            zoomLabel.textContent = `Zoom x${currentZoom.toFixed(1)}`;
+            
+            // Mettre à jour la barre de progression
+            zoomFill.style.width = Math.max(0, Math.min(100, zoomPercent)) + '%';
+        }
+
+        // Initialiser l'indicateur de zoom
+        updateZoomIndicator();
+        
+        // Chargement données géographiques
+        Promise.all([
+            d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'),
+            d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json')
+        ]).then(([world, land]) => {
+            // Océan système avec effets thermiques
+            oceanGroup.append('path')
+                .datum({type: 'Sphere'})
+                .attr('class', 'ocean')
+                .attr('d', path)
+               
+            
+            // Grille système discrète
+            graticuleGroup.append('path')
+                .datum(graticule)
+                .attr('class', 'graticule')
+                .attr('d', path);
+            
+            // Continents base - structure principale
+            const landFeatures = topojson.feature(land, land.objects.land);
+            landGroup.selectAll('path')
+                .data(landFeatures.features)
+                .enter().append('path')
+                .attr('class', 'land')
+                .attr('d', path);
+            
+            // Pays pour biomes climatiques (sans frontières visibles)
+            countriesData = topojson.feature(world, world.objects.countries);
+            
+            // Application biomes climatiques avancés
+            biomesGroup.selectAll('path')
+                .data(countriesData.features)
+                .enter().append('path')
+                .attr('class', d => getBiomeClass(d))
+                .attr('d', path)
+                .style('stroke', 'none');  // Suppression frontières nationales
+            
+            // Points données système
+            createLocationPoints();
+            
+            // Démarrage animation climatique
+            startAnimation();
+            updateAll();
+        });
+        
+        // Classification climatique avancée inspirée earth.nullschool
+        function getBiomeClass(feature) {
+            const bounds = d3.geoBounds(feature);
+            const centerLat = (bounds[0][1] + bounds[1][1]) / 2;
+            const centerLon = (bounds[0][0] + bounds[1][0]) / 2;
+            
+            // Zones polaires (Arctique/Antarctique)
+            if (Math.abs(centerLat) > 66.5) return 'tundra'; // Cercles polaires
+            
+            // Zones subarctiques - Taïga
+            if (Math.abs(centerLat) > 50 && Math.abs(centerLat) <= 66.5) {
+                if (centerLon > -170 && centerLon < 170) return 'taiga'; // Ceinture boréale
+            }
+            
+            // Zones tropicales humides - Forêts équatoriales
+            if (centerLat > -10 && centerLat < 10) {
+                // Bassin amazonien
+                if (centerLon > -80 && centerLon < -35) return 'rainforest';
+                // Bassin du Congo
+                if (centerLon > 10 && centerLon < 30 && centerLat > -5 && centerLat < 5) return 'rainforest';
+                // Indonésie/Malaisie
+                if (centerLon > 95 && centerLon < 140 && centerLat > -10 && centerLat < 10) return 'rainforest';
+            }
+            
+            // Zones arides - Déserts
+            // Sahara et péninsule arabique
+            if (centerLat > 15 && centerLat < 35) {
+                if (centerLon > -20 && centerLon < 65) return 'desert';
+            }
+            // Déserts d'Asie centrale
+            if (centerLat > 35 && centerLat < 50 && centerLon > 45 && centerLon < 90) return 'desert';
+            // Australie centrale
+            if (centerLat > -35 && centerLat < -15 && centerLon > 115 && centerLon < 145) return 'desert';
+            // Déserts américains
+            if (centerLat > 25 && centerLat < 40 && centerLon > -125 && centerLon < -100) return 'desert';
+            // Atacama et Patagonie
+            if (centerLat > -30 && centerLat < -15 && centerLon > -75 && centerLon < -65) return 'desert';
+            
+            // Savanes tropicales
+            // Afrique de l'Est et du Sud
+            if (centerLat > -25 && centerLat < 15 && centerLon > 15 && centerLon < 50) {
+                if (!(centerLon > 10 && centerLon < 30 && centerLat > -5 && centerLat < 5)) { // Exclut forêt Congo
+                    return 'savanna';
+                }
+            }
+            // Cerrado brésilien
+            if (centerLat > -20 && centerLat < -5 && centerLon > -60 && centerLon < -40) return 'savanna';
+            // Nord Australie
+            if (centerLat > -20 && centerLat < -10 && centerLon > 120 && centerLon < 145) return 'savanna';
+            
+            // Zones tempérées par défaut
+            return 'temperate';
+        }
+        
+        // Création points données avec logique mobile/desktop
+        function createLocationPoints() {
+            const groups = pointsGroup.selectAll('.location-point')
+                .data(locations)
+                .enter().append('g')
+                .attr('class', 'location-point')
+                .on('click', showDetail);
+            
+            // Ajouter les événements hover seulement sur desktop
+            if (window.innerWidth > 768) {
+                groups
+                    .on('mouseenter', showPreview)
+                    .on('mouseleave', hidePreview);
+            }
+                
+            groups.append('circle')
+                .attr('r', 3);
+        }
+        
+        // Mise à jour système
+        function updateAll() {
+            g.selectAll('path').attr('d', path);
+            
+            pointsGroup.selectAll('.location-point')
+                .each(function(d) {
+                    const coords = projection(d.coords);
+                    const point = d3.select(this);
+                    
+                    if (coords) {
+                        const rotationLambda = projection.rotate()[0];
+                        const rotationPhi = projection.rotate()[1];
+                        const distance = d3.geoDistance([-rotationLambda, -rotationPhi], d.coords);
+                        const isVisible = distance < Math.PI / 2;
+                        
+                        point.attr('transform', `translate(${coords[0]},${coords[1]})`)
+                             .style('display', isVisible ? 'block' : 'none')
+                             .style('opacity', isVisible ? 1 - (distance / (Math.PI / 2)) * 0.2 : 0);
+                    } else {
+                        point.style('display', 'none');
+                    }
+                });
+        }
+        
+        // Animation système
+        function startAnimation() {
+            d3.timer(elapsed => {
+                if (autoRotate) {
+                    const rotate = projection.rotate();
+                    projection.rotate([rotate[0] + 0.1, rotate[1], rotate[2]]);
+                    updateAll();
+                }
+            });
+        }
+        
+        // Contrôle utilisateur avec zoom
+        const drag = d3.drag()
+            .on('start', () => { autoRotate = false; })
+            .on('drag', event => {
+                const rotation = projection.rotate();
+                const k = sensitivity * (scale * currentZoom) / 2;
+                
+                rotation[0] += event.dx / k * 180;
+                rotation[1] -= event.dy / k * 180;
+                rotation[1] = Math.max(-90, Math.min(90, rotation[1]));
+                
+                projection.rotate(rotation);
+                updateAll();
+            })
+            .on('end', () => {
+                setTimeout(() => { autoRotate = true; }, 2000);
+            });
+        
+        // Application des contrôles avec gestion du survol biome
+        svg.call(drag).call(zoom);
+        
+        // Gestionnaire de survol pour les informations biome
+        svg.on('mousemove', function(event) {
+            const [x, y] = d3.pointer(event);
+            const biomeInfo = detectBiomeFromCursor([x, y]);
+            
+            if (biomeInfo) {
+                updateBiomeInfoPanel(biomeInfo.biome, biomeInfo.lat, biomeInfo.lon);
+            } else {
+                document.getElementById('biome-info-panel').classList.add('hidden');
+            }
+        });
+        
+        svg.on('mouseleave', function() {
+            document.getElementById('biome-info-panel').classList.add('hidden');
+        });
+        
+        // Désactiver le zoom sur double-clic pour éviter les conflits
+        svg.on('dblclick.zoom', null);
+        
+        // Fonctions interface système
+        
+        // Aperçu données terminal - image aléatoire dans le globe
+        function showPreview(event, d) {
+            // Ne pas afficher sur mobile
+            if (window.innerWidth <= 768) return;
+            
+            autoRotate = false;
+            
+            const preview = document.getElementById('hover-preview');
+            const imageElement = preview.querySelector('.hover-image-simple');
+            
+            // Position aléatoire dans l'espace du globe
+            const globeSize = Math.min(window.innerWidth, window.innerHeight);
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const radius = globeSize * 0.3; // Dans la zone du globe
+            
+            // Position aléatoire dans un cercle
+            const angle = Math.random() * Math.PI * 2;
+            const distance = Math.random() * radius;
+            const randomX = centerX + Math.cos(angle) * distance - 100; // -100 pour centrer l'image
+            const randomY = centerY + Math.sin(angle) * distance - 75;  // -75 pour centrer l'image
+            
+            // Appliquer la position
+            preview.style.left = randomX + 'px';
+            preview.style.top = randomY + 'px';
+            
+            // Contenu de l'image simple
+            if (d.preview.image) {
+                imageElement.innerHTML = `<img src="${d.preview.image}" alt="${d.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            } else {
+                imageElement.textContent = d.preview.text || d.name;
+            }
+            
+            preview.classList.add('visible');
+        }
+        
+        // Masquage aperçu
+        function hidePreview() {
+            // Ne pas gérer sur mobile
+            if (window.innerWidth <= 768) return;
+            
+            autoRotate = true;
+            document.getElementById('hover-preview').classList.remove('visible');
+        }
+        
+        // Affichage mosaïque système avec drag & drop interactif
+        function showDetail(event, d) {
+            if (event) event.stopPropagation();
+            
+            const overlay = document.getElementById('detail-overlay');
+            const content = overlay.querySelector('.detail-content');
+            
+            // Charger les positions sauvegardées au début
+            loadCustomPositions();
+            
+            // Générateur de texte aléatoire
+            function generatePlaceholderText(length = 150) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                let result = '';
+                for (let i = 0; i < length; i++) {
+                    if (i % 20 === 0 && i > 0) result += ' ';
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+            
+            // Positions originales par défaut SANS SUPERPOSITION
+            const defaultPositions = [
+                // Section 1 - image et texte bien espacés
+                { x: 80, y: 50, size: 'mosaic-medium' },    // image
+                { x: 500, y: 50, size: 'mosaic-medium' },   // texte
+                
+                // Section 2 - ligne suivante
+                { x: 80, y: 350, size: 'mosaic-large' },     // image  
+                { x: 500, y: 350, size: 'mosaic-large' },    // texte
+                
+                // Fragments - bien espacés en grille
+                { x: 80, y: 700, size: 'mosaic-small' },     // frag img 1
+                { x: 400, y: 700, size: 'mosaic-small' },    // frag txt 1
+                { x: 720, y: 700, size: 'mosaic-small' },    // frag img 2
+                { x: 80, y: 950, size: 'mosaic-small' },    // frag txt 2
+                
+                { x: 400, y: 950, size: 'mosaic-medium' },  // frag img 3
+                { x: 720, y: 950, size: 'mosaic-medium' },  // frag txt 3
+                { x: 80, y: 1250, size: 'mosaic-wide' },     // frag img 4
+                { x: 550, y: 1250, size: 'mosaic-small' },   // frag txt 4
+                
+                { x: 80, y: 1550, size: 'mosaic-large' },    // frag img 5
+                { x: 500, y: 1550, size: 'mosaic-medium' },  // frag txt 5
+                { x: 80, y: 1900, size: 'mosaic-small' },    // frag img 6
+                { x: 400, y: 1900, size: 'mosaic-small' },   // frag txt 6
+                
+                { x: 720, y: 1900, size: 'mosaic-medium' },  // frag img 7
+                { x: 80, y: 2200, size: 'mosaic-wide' },     // frag txt 7
+                { x: 550, y: 2200, size: 'mosaic-small' },   // frag img 8
+                { x: 80, y: 2500, size: 'mosaic-medium' }    // frag txt 8
+            ];
+            
+            let html = `
+                <button class="close-btn" onclick="closeDetailOverlay()">[X] TERMINATE</button>
+                <div class="mosaic-container">
+            `;
+            
+            let blockIndex = 0;
+            
+            // Blocs données originaux - maintenant séparés en images et texte
+            d.detail.sections.forEach((section, index) => {
+                // Bloc image séparé - SIMPLE SANS TITRE
+                const imageBlockId = `${d.id}_image_${index}`;
+                const imagePos = defaultPositions[blockIndex] || { x: 100 + (blockIndex * 120), y: 100 + (blockIndex * 200), size: 'mosaic-medium' };
+                blockIndex++;
+                
+                html += `
+                    <div class="image-block" 
+                         data-block-id="${imageBlockId}"
+                         style="position: absolute; left: ${imagePos.x}px; top: ${imagePos.y}px; width: 280px; height: 200px;">
+                        IMAGE_PLACEHOLDER
+                    </div>
+                `;
+                
+                // Bloc texte séparé
+                const textBlockId = `${d.id}_text_${index}`;
+                const textPos = defaultPositions[blockIndex] || { x: 100 + (blockIndex * 120), y: 100 + (blockIndex * 200), size: 'mosaic-medium' };
+                blockIndex++;
+                
+                html += `
+                    <div class="mosaic-block ${textPos.size}" 
+                         data-block-id="${textBlockId}"
+                         style="left: ${textPos.x}px; top: ${textPos.y}px;">
+                        <h3>${section.subtitle}_TXT</h3>
+                        <div class="text-block">${generatePlaceholderText(120)}</div>
+                    </div>
+                `;
+            });
+            
+            // Fragments système supplémentaires - images et textes séparés
+            for (let i = 0; i < 8; i++) {
+                // Bloc image - SIMPLE SANS TITRE
+                const imageBlockId = `${d.id}_fragment_img_${i}`;
+                const imagePos = defaultPositions[blockIndex] || { 
+                    x: 200 + (i * 150), 
+                    y: 800 + (i * 250), 
+                    size: 'mosaic-medium'
+                };
+                blockIndex++;
+                
+                html += `
+                    <div class="image-block" 
+                         data-block-id="${imageBlockId}"
+                         style="position: absolute; left: ${imagePos.x}px; top: ${imagePos.y}px; width: 280px; height: 200px;">
+                        IMAGE_PLACEHOLDER
+                    </div>
+                `;
+                
+                // Bloc texte
+                const textBlockId = `${d.id}_fragment_txt_${i}`;
+                const textPos = defaultPositions[blockIndex] || { 
+                    x: 200 + (i * 150), 
+                    y: 850 + (i * 250), 
+                    size: ['mosaic-small', 'mosaic-medium', 'mosaic-large', 'mosaic-wide'][Math.floor(Math.random() * 4)]
+                };
+                
+                if (blockIndex < defaultPositions.length) {
+                    blockIndex++;
+                }
+                
+                html += `
+                    <div class="mosaic-block ${textPos.size}" 
+                         data-block-id="${textBlockId}"
+                         style="left: ${textPos.x}px; top: ${textPos.y}px;">
+                        <h3>TXT_${String(i + 1).padStart(2, '0')}</h3>
+                        <div class="text-block">${generatePlaceholderText(100)}</div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            
+            content.innerHTML = html;
+            overlay.classList.add('visible');
+            
+            // Initialiser le drag & drop après avoir créé le contenu
+            setTimeout(() => {
+                initDragAndDrop();
+                applyCustomPositions(d.name);
+            }, 100);
+            
+            autoRotate = true;
+        }
+        
+        // Fermeture système
+        function closeDetailOverlay() {
+            document.getElementById('detail-overlay').classList.remove('visible');
+        }
+        
+        // Raccourci système
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeDetailOverlay();
+            }
+        });
+        
+        // Redimensionnement système avec zoom et gestion responsive
+        window.addEventListener('resize', () => {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const s = Math.min(w, h) / 2.8;
+            
+            svg.attr('width', w).attr('height', h);
+            projection.scale(s * currentZoom).translate([w / 2, h / 2]);
+            updateAll();
+            
+            // Réattacher les événements selon le type d'écran
+            pointsGroup.selectAll('.location-point')
+                .on('mouseenter', null)
+                .on('mouseleave', null);
+                
+            if (w > 768) {
+                // Desktop: réactiver les events hover
+                pointsGroup.selectAll('.location-point')
+                    .on('mouseenter', showPreview)
+                    .on('mouseleave', hidePreview);
+            } else {
+                // Mobile: masquer les previews actives
+                document.getElementById('hover-preview').classList.remove('visible');
+            }
+        });
+    </script>
+</body>
+</html>
