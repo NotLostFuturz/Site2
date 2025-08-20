@@ -1,0 +1,103 @@
+// Générateur de contenu pour la page ALL WORK - Version améliorée
+function generateAllWorkContent() {
+    const container = document.getElementById('gallery-container');
+    let html = '';
+    
+    // Générateur de texte aléatoire
+    function generatePlaceholderText(length = 150) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            if (i % 20 === 0 && i > 0) result += ' ';
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+    
+    // Positions organiques mieux espacées - moins de superposition
+    const organicPositions = [
+        // Ligne 1 - bien espacée
+        { x: 80, y: 120 }, { x: 420, y: 80 }, { x: 760, y: 140 },
+        // Ligne 2 - décalage vertical important
+        { x: 150, y: 380 }, { x: 520, y: 320 }, { x: 50, y: 450 },
+        // Ligne 3 - encore plus bas
+        { x: 400, y: 680 }, { x: 750, y: 620 }, { x: 200, y: 750 },
+        // Ligne 4 - espacement généreux
+        { x: 600, y: 980 }, { x: 100, y: 1050 }, { x: 450, y: 920 },
+        // Ligne 5 - continuation fluide
+        { x: 300, y: 1280 }, { x: 650, y: 1220 }, { x: 80, y: 1380 },
+        // Ligne 6 - fin de cluster
+        { x: 500, y: 1580 }, { x: 200, y: 1650 }, { x: 700, y: 1520 },
+        // Positions supplémentaires pour plus de variété
+        { x: 350, y: 1850 }, { x: 120, y: 1920 }, { x: 580, y: 1780 }
+    ];
+    
+    locations.forEach((location, locationIndex) => {
+        // Espacement vertical réduit entre les œuvres pour qu'elles s'entremêlent
+        const baseY = locationIndex * 180 * 6; // Réduit de 250 à 180 pour rapprocher les groupes
+        
+        // Titre flottant pour chaque œuvre
+        html += `
+            <div class="work-cluster">
+                <div class="work-title">
+                    <h2>${location.name}</h2>
+                </div>
+        `;
+        
+        let positionIndex = 0;
+        
+        // Disposition organique des blocs des sections avec espacement amélioré
+        location.detail.sections.forEach((section, sectionIndex) => {
+            const pos1 = organicPositions[positionIndex % organicPositions.length];
+            const pos2 = organicPositions[(positionIndex + 1) % organicPositions.length];
+            
+            // Bloc image à position organique
+            html += `
+                <div class="image-block" 
+                     style="position: absolute; left: ${pos1.x}px; top: ${baseY + pos1.y}px; width: 280px; height: 200px;">
+                    IMG_${sectionIndex + 1}
+                </div>
+            `;
+            
+            // Bloc texte à position organique bien séparée (augmentation espacement)
+            html += `
+                <div class="mosaic-block mosaic-medium" 
+                     style="position: absolute; left: ${pos2.x}px; top: ${baseY + pos2.y + 120}px;">
+                    <h3>${section.subtitle}</h3>
+                    <div class="text-block">${generatePlaceholderText(120)}</div>
+                </div>
+            `;
+            
+            positionIndex += 2;
+        });
+        
+        // Fragments supplémentaires en mosaïque organique avec meilleur espacement
+        for (let i = 0; i < 8; i++) {
+            const pos1 = organicPositions[(positionIndex) % organicPositions.length];
+            const pos2 = organicPositions[(positionIndex + 1) % organicPositions.length];
+            
+            // Image fragment - espacement vertical augmenté
+            html += `
+                <div class="image-block" 
+                     style="position: absolute; left: ${pos1.x}px; top: ${baseY + pos1.y + 400}px; width: 280px; height: 200px;">
+                    FRAG_IMG_${i + 1}
+                </div>
+            `;
+            
+            // Texte fragment - séparation plus importante des images
+            html += `
+                <div class="mosaic-block mosaic-small" 
+                     style="position: absolute; left: ${pos2.x}px; top: ${baseY + pos2.y + 520}px;">
+                    <h3>FRAG_${String(i + 1).padStart(2, '0')}</h3>
+                    <div class="text-block">${generatePlaceholderText(80)}</div>
+                </div>
+            `;
+            
+            positionIndex += 2;
+        }
+        
+        html += '</div>'; // Fin work-cluster
+    });
+    
+    container.innerHTML = html;
+}
