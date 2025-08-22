@@ -6,6 +6,84 @@
     <title>SYSTEM_GLOBE.EXE</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cinzel+Decorative:wght@400;700&display=swap');
+        
+        /* Police Nockwell pour le titre principal */
+        @font-face {
+            font-family: 'Nockwell';
+            src: url('https://raw.githubusercontent.com/NotLostFuturz/Oya-MaximaII/main/Nockwell-JR9xo.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        /* Police Microsquare pour le reste du texte */
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        /* Police gothique personnalisée inspirée de l'image */
+        @font-face {
+            font-family: 'GothicManuscript';
+            src: local('Cinzel Decorative'), local('Cinzel'), local('UnifrakturMaguntia');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        /* Styles pour reproduire la police manuscrite gothique */
+        .gothic-font {
+            font-family: 'Cinzel Decorative', 'Cinzel', 'UnifrakturMaguntia', 'Old English Text MT', 'Blackletter', serif;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            position: relative;
+            text-shadow: 
+                1px 1px 0px rgba(0, 0, 0, 0.3),
+                0px 0px 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Effet de ligatures et ornements pour imiter la police manuscrite */
+        .gothic-ornate {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            position: relative;
+            filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.3));
+        }
+        
+        /* Style spécifique pour le titre principal */
+        .gothic-title {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            position: relative;
+            filter: drop-shadow(0px 0px 2px #0066ff);
+            text-shadow: 
+                1px 1px 0px rgba(0, 0, 0, 0.5),
+                0px 0px 3px #0066ff;
+        }
+        
+        /* Pseudo-éléments pour ajouter des ornements comme dans la police manuscrite */
+        .gothic-ornate::before,
+        .gothic-ornate::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 8px;
+            height: 1px;
+            background: currentColor;
+            opacity: 0.6;
+        }
+        
+        .gothic-ornate::before {
+            left: -15px;
+            transform: translateY(-50%) rotate(45deg);
+        }
+        
+        .gothic-ornate::after {
+            right: -15px;
+            transform: translateY(-50%) rotate(-45deg);
+        }
         
         * {
             box-sizing: border-box;
@@ -15,7 +93,7 @@
             margin: 0;
             background: #0a0a0a;
             overflow: hidden;
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-family: 'Share Tech Mono', 'JetBrains Mono', 'Courier New', monospace;
             color: #ffffff;
             cursor: crosshair;
             position: relative;
@@ -225,7 +303,7 @@
             font-size: 11px;
             letter-spacing: 1px;
             z-index: 11;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Share Tech Mono', monospace;
             text-transform: uppercase;
             font-weight: 700;
             box-shadow: none;
@@ -252,7 +330,7 @@
             background: #ffffff;
             border: 2px solid #000000;
             padding: 15px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Share Tech Mono', monospace;
             transition: box-shadow 0.2s;
             box-shadow: 4px 4px 0px #000000;
             cursor: move;
@@ -269,8 +347,6 @@
             z-index: 1000;
             box-shadow: 8px 8px 0px #000000;
         }
-
-
 
         .mosaic-block h3 {
             color: #000000;
@@ -308,7 +384,7 @@
             font-size: 11px;
             line-height: 1.4;
             letter-spacing: 0.5px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Share Tech Mono', monospace;
         }
 
         /* Tailles variées pour layout original */
@@ -332,8 +408,6 @@
             height: 240px;
         }
         
-        /* Aperçu terminal - supprimé l'ancien style */
-        
         /* Effet machine à écrire centré en bas */
         .typewriter-container {
             position: fixed;
@@ -349,7 +423,7 @@
             font-size: 12px;
             letter-spacing: 1px;
             z-index: 15;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Share Tech Mono', monospace;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -394,27 +468,53 @@
             z-index: 10;
         }
         
-        .nav-menu a {
+        .nav-menu a, .nav-menu .works-menu {
             display: block;
             color: #ffffff;
             font-size: 14px;
             letter-spacing: 2px;
             margin-bottom: 10px;
             text-decoration: none;
-            font-weight: 400;
-            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
             text-transform: uppercase;
             padding: 5px 0;
             border-left: 2px solid transparent;
             padding-left: 10px;
             transition: all 0.2s ease;
+            font-family: 'Share Tech Mono', monospace;
+            text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
         }
         
-        .nav-menu a:hover {
+        .nav-menu a:hover, .nav-menu .works-menu:hover {
             color: #0066ff;
             border-left-color: #0066ff;
             padding-left: 15px;
             text-shadow: 0 0 10px #0066ff;
+        }
+
+        /* Sous-menu Works */
+        .works-submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-left: 20px;
+        }
+
+        .works-submenu.open {
+            max-height: 200px;
+        }
+
+        .works-submenu a {
+            font-size: 12px;
+            margin-bottom: 8px;
+            padding-left: 15px;
+            color: #cccccc;
+        }
+
+        .works-submenu a:hover {
+            color: #0066ff;
+            padding-left: 20px;
         }
 
         /* Panneau d'informations contextuelles - Rapproché et sans cadre */
@@ -431,7 +531,7 @@
             font-size: 10px;
             letter-spacing: 0.5px;
             z-index: 25;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Share Tech Mono', monospace;
             line-height: 1.4;
             transition: opacity 0.2s ease;
         }
@@ -455,7 +555,7 @@
             font-size: 11px;
             letter-spacing: 0.5px;
             z-index: 30;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Share Tech Mono', monospace;
             line-height: 1.5;
             overflow-y: auto;
             transform: translateX(100%);
@@ -494,7 +594,7 @@
             color: #000;
         }
 
-        /* Pop-up survol simplifié - image aléatoire dans le globe */
+        /* Pop-up survol simplifié - image seule agrandie */
         #hover-preview {
             position: fixed;
             pointer-events: none;
@@ -507,20 +607,27 @@
             opacity: 1;
         }
 
-        .hover-image-simple {
-            width: 200px;
-            height: 150px;
+        .hover-image-large {
+            width: 400px;
+            height: 300px;
             background: #1a1a1a;
-            border: 2px solid #0066ff;
+            border: none;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #ffffff;
-            font-size: 10px;
+            font-size: 14px;
             text-align: center;
-            padding: 10px;
-            font-family: 'JetBrains Mono', monospace;
-            box-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+            padding: 0;
+            font-family: 'Share Tech Mono', monospace;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+        }
+
+        .hover-image-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         /* Barre de zoom discrète */
@@ -535,7 +642,7 @@
             font-size: 9px;
             letter-spacing: 0.5px;
             z-index: 15;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Share Tech Mono', monospace;
             color: #ffffff;
             transition: opacity 0.3s ease;
         }
@@ -584,125 +691,6 @@
         .zoom-mark:nth-child(3) { left: 50%; }
         .zoom-mark:nth-child(4) { left: 75%; }
         .zoom-mark:nth-child(5) { left: 100%; }
-
-        /* Bouton toggle Globe/All work */
-        .view-toggle {
-            position: absolute;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 30;
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid #ffffff;
-            border-radius: 0;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            overflow: hidden;
-        }
-
-        .toggle-option {
-            display: inline-block;
-            padding: 8px 20px;
-            background: transparent;
-            color: #ffffff;
-            border: none;
-            cursor: crosshair;
-            transition: all 0.2s;
-            font-family: inherit;
-            font-size: inherit;
-            letter-spacing: inherit;
-        }
-
-        .toggle-option.active {
-            background: #ffffff;
-            color: #000;
-        }
-
-        .toggle-option:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .gallery-view {
-            display: none;
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-            background: #ffffff;
-            background-image: 
-                radial-gradient(circle, #999999 1px, transparent 1px);
-            background-size: 20px 20px;
-            padding: 0;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        .gallery-view.visible {
-            display: block;
-        }
-
-        .gallery-terminate {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #000000;
-            border: 2px solid #000000;
-            color: #ffffff;
-            padding: 10px 15px;
-            cursor: crosshair;
-            transition: all 0.2s;
-            font-size: 11px;
-            letter-spacing: 1px;
-            z-index: 100;
-            font-family: 'JetBrains Mono', monospace;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-
-        .gallery-terminate:hover {
-            background: #ffffff;
-            color: #000000;
-            border: 2px solid #000000;
-            box-shadow: 2px 2px 0px #000000;
-        }
-
-        .gallery-container {
-            position: relative;
-            width: 100%;
-            min-height: 1500vh;
-            padding: 40px;
-            box-sizing: border-box;
-        }
-
-        .work-cluster {
-            position: relative;
-            width: 100%;
-            min-height: 250vh;
-            margin-bottom: 150px;
-        }
-
-        .work-title {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #000000;
-            color: #ffffff;
-            padding: 15px 30px;
-            z-index: 10;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 18px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border: 2px solid #000000;
-        }
-
-        .work-title h2 {
-            margin: 0;
-            color: #ffffff;
-        }
         
         h1 {
             position: absolute;
@@ -713,13 +701,42 @@
             letter-spacing: 3px;
             margin: 0;
             z-index: 10;
-            font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
+            font-weight: normal;
             text-transform: uppercase;
-            border: 1px solid #0066ff;
+            background: transparent;
+            border: none;
             padding: 10px 15px;
-            background: #000;
-            box-shadow: 0 0 0 1px #ffffff inset;
+            /* Police Nockwell */
+            font-family: 'Nockwell', 'Orbitron', sans-serif;
+            /* Effet lumineux bleu derrière */
+            position: relative;
+        }
+
+        /* Effet lumineux bleu derrière le titre */
+        h1::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(ellipse, rgba(0, 102, 255, 0.3) 0%, rgba(0, 102, 255, 0.1) 50%, transparent 100%);
+            z-index: -1;
+            border-radius: 10px;
+            filter: blur(8px);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            0% { 
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.7;
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 1;
+            }
         }
         
         /* Terminal flicker */
@@ -752,14 +769,24 @@
                 left: 10px;
             }
             
-            .nav-menu a {
+            .nav-menu a, .nav-menu .works-menu {
                 font-size: 11px;
                 margin-bottom: 6px;
                 padding-left: 8px;
             }
             
-            .nav-menu a:hover {
+            .nav-menu a:hover, .nav-menu .works-menu:hover {
                 padding-left: 12px;
+            }
+            
+            .works-submenu a {
+                font-size: 10px;
+                margin-bottom: 6px;
+                padding-left: 12px;
+            }
+
+            .works-submenu a:hover {
+                padding-left: 16px;
             }
             
             /* Pages navigation mobile */
@@ -805,16 +832,6 @@
                 padding: 6px;
             }
             
-            /* Toggle buttons mobile */
-            .view-toggle {
-                top: 20px;
-                font-size: 10px;
-            }
-            
-            .toggle-option {
-                padding: 6px 15px;
-            }
-            
             /* Overlay mobile */
             .close-btn {
                 top: 10px;
@@ -827,13 +844,6 @@
                 width: 95vw;
                 height: 98vh;
                 padding: 30px 20px;
-            }
-            
-            .gallery-terminate {
-                top: 10px;
-                right: 10px;
-                padding: 6px 12px;
-                font-size: 9px;
             }
             
             .mosaic-container {
@@ -862,48 +872,6 @@
             .mosaic-block .text-block {
                 font-size: 10px;
             }
-
-            .gallery-view {
-                padding: 0;
-            }
-            
-            .gallery-container {
-                padding: 20px;
-                min-height: 800vh;
-            }
-            
-            .work-cluster {
-                min-height: 150vh;
-                margin-bottom: 80px;
-            }
-            
-            .work-title {
-                position: relative !important;
-                left: 0 !important;
-                transform: none !important;
-                margin-bottom: 30px;
-                padding: 10px 15px;
-                font-size: 14px;
-            }
-            
-            .work-title h2 {
-                font-size: 14px;
-                letter-spacing: 1px;
-            }
-            
-            .gallery-container .mosaic-block,
-            .gallery-container .image-block {
-                position: relative !important;
-                width: 100% !important;
-                height: auto !important;
-                margin-bottom: 30px !important;
-                left: 0 !important;
-                top: 0 !important;
-            }
-            
-            .gallery-container .image-block {
-                height: 200px !important;
-            }
         }
     </style>
 </head>
@@ -916,6 +884,12 @@
         <a href="#portfolio">Portfolio</a>
         <a href="#contact">Contact</a>
         <a href="#manifeste">Manifeste</a>
+        <div class="works-menu" onclick="toggleWorksMenu()">Works</div>
+        <div class="works-submenu" id="works-submenu">
+            <a href="#fragments">Fragments of Planete A</a>
+            <a href="#sculpture">Sculpture</a>
+            <a href="#film">Film</a>
+        </div>
     </nav>
     
     <!-- Effet machine à écrire centré en bas -->
@@ -979,7 +953,10 @@
     </div>
     
     <div id="hover-preview">
-        <div class="hover-image-simple">IMAGE_PREVIEW</div>
+        <div class="hover-image-large">
+            <img id="preview-image" src="" alt="Preview" style="display: none;">
+            <span id="preview-placeholder">IMAGE_PREVIEW</span>
+        </div>
     </div>
 
     <!-- Panneau d'informations biome -->
@@ -988,13 +965,6 @@
     </div>
     
     <div id="globe-container">
-        <!-- Bouton toggle -->
-        <div class="view-toggle">
-            <button class="toggle-option active" id="globe-toggle">Globe</button>
-            <button class="toggle-option" id="gallery-toggle">All work</button>
-        </div>
-
-        <!-- Vue Globe (existant) -->
         <svg id="globe">
             <defs>
                 <!-- Gradient océan thermique inspiré nullschool -->
@@ -1144,14 +1114,6 @@
                 </filter>
             </defs>
         </svg>
-
-        <!-- Vue Galerie All work -->
-        <div class="gallery-view" id="gallery-view">
-            <button class="gallery-terminate" onclick="switchToGlobe()">[X] TERMINATE</button>
-            <div class="gallery-container" id="gallery-container">
-                <!-- Contenu généré dynamiquement -->
-            </div>
-        </div>
         
         <div id="preview-panel">
             <div class="panel-content"></div>
@@ -1276,6 +1238,12 @@
         // Initialiser l'effet machine à écrire
         setTimeout(typewriterEffect, 100);
 
+        // Gestion du menu Works
+        function toggleWorksMenu() {
+            const submenu = document.getElementById('works-submenu');
+            submenu.classList.toggle('open');
+        }
+
         // Gestion des pages de navigation
         function showNavPage(pageId) {
             // Masquer toutes les pages
@@ -1311,270 +1279,35 @@
             showNavPage('manifeste');
         });
 
+        // Event listeners pour les sous-menus Works
+        document.querySelector('a[href="#fragments"]').addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Fragments of Planete A clicked');
+            // Lien à ajouter plus tard
+        });
+
+        document.querySelector('a[href="#sculpture"]').addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Sculpture clicked');
+            // Lien à ajouter plus tard
+        });
+
+        document.querySelector('a[href="#film"]').addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Film clicked');
+            // Lien à ajouter plus tard
+        });
+
         // Fermer les pages en cliquant ailleurs
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.nav-page') && !e.target.closest('.nav-menu')) {
                 document.querySelectorAll('.nav-page').forEach(page => {
                     page.classList.remove('visible');
                 });
+                // Fermer aussi le sous-menu Works
+                document.getElementById('works-submenu').classList.remove('open');
             }
         });
-
-        // Système de toggle Globe/All work
-        function switchToGlobe() {
-            document.getElementById('globe').style.display = 'block';
-            document.getElementById('gallery-view').classList.remove('visible');
-            document.getElementById('globe-toggle').classList.add('active');
-            document.getElementById('gallery-toggle').classList.remove('active');
-            
-            // Réafficher typewriter et zoom
-            document.querySelector('.typewriter-container').classList.remove('hidden');
-            document.querySelector('.zoom-indicator').classList.remove('hidden');
-            
-            // Réactiver l'animation du globe
-            autoRotate = true;
-        }
-
-        function switchToGallery() {
-            document.getElementById('globe').style.display = 'none';
-            document.getElementById('gallery-view').classList.add('visible');
-            document.getElementById('globe-toggle').classList.remove('active');
-            document.getElementById('gallery-toggle').classList.add('active');
-            
-            // Générer le contenu de la galerie
-            generateAllWorkContent();
-            
-            // Masquer typewriter et zoom
-            document.querySelector('.typewriter-container').classList.add('hidden');
-            document.querySelector('.zoom-indicator').classList.add('hidden');
-            
-            // Masquer les pop-ups et info biome
-            document.getElementById('hover-preview').classList.remove('visible');
-            document.getElementById('biome-info-panel').classList.add('hidden');
-            
-            // Arrêter l'animation du globe
-            autoRotate = false;
-        }
-
-        // Event listeners pour les boutons toggle
-        document.getElementById('globe-toggle').addEventListener('click', switchToGlobe);
-        document.getElementById('gallery-toggle').addEventListener('click', switchToGallery);
-
-// Générateur de contenu pour la page ALL WORK - Version améliorée
-function generateAllWorkContent() {
-    const container = document.getElementById('gallery-container');
-    let html = '';
-    
-    // Générateur de texte aléatoire
-    function generatePlaceholderText(length = 150) {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        let result = '';
-        for (let i = 0; i < length; i++) {
-            if (i % 20 === 0 && i > 0) result += ' ';
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
-    }
-    
-    // Positions organiques mieux espacées - moins de superposition
-    const organicPositions = [
-        // Ligne 1 - bien espacée
-        { x: 80, y: 120 }, { x: 420, y: 80 }, { x: 760, y: 140 },
-        // Ligne 2 - décalage vertical important
-        { x: 150, y: 380 }, { x: 520, y: 320 }, { x: 50, y: 450 },
-        // Ligne 3 - encore plus bas
-        { x: 400, y: 680 }, { x: 750, y: 620 }, { x: 200, y: 750 },
-        // Ligne 4 - espacement généreux
-        { x: 600, y: 980 }, { x: 100, y: 1050 }, { x: 450, y: 920 },
-        // Ligne 5 - continuation fluide
-        { x: 300, y: 1280 }, { x: 650, y: 1220 }, { x: 80, y: 1380 },
-        // Ligne 6 - fin de cluster
-        { x: 500, y: 1580 }, { x: 200, y: 1650 }, { x: 700, y: 1520 },
-        // Positions supplémentaires pour plus de variété
-        { x: 350, y: 1850 }, { x: 120, y: 1920 }, { x: 580, y: 1780 }
-    ];
-    
-    locations.forEach((location, locationIndex) => {
-        // Espacement vertical réduit entre les œuvres pour qu'elles s'entremêlent
-        const baseY = locationIndex * 180 * 6; // Réduit de 250 à 180 pour rapprocher les groupes
-        
-        // Titre flottant pour chaque œuvre
-        html += `
-            <div class="work-cluster">
-                <div class="work-title">
-                    <h2>${location.name}</h2>
-                </div>
-        `;
-        
-        let positionIndex = 0;
-        
-        // Disposition organique des blocs des sections avec espacement amélioré
-        location.detail.sections.forEach((section, sectionIndex) => {
-            const pos1 = organicPositions[positionIndex % organicPositions.length];
-            const pos2 = organicPositions[(positionIndex + 1) % organicPositions.length];
-            
-            // Bloc image à position organique
-            html += `
-                <div class="image-block" 
-                     style="position: absolute; left: ${pos1.x}px; top: ${baseY + pos1.y}px; width: 280px; height: 200px;">
-                    IMG_${sectionIndex + 1}
-                </div>
-            `;
-            
-            // Bloc texte à position organique bien séparée (augmentation espacement)
-            html += `
-                <div class="mosaic-block mosaic-medium" 
-                     style="position: absolute; left: ${pos2.x}px; top: ${baseY + pos2.y + 120}px;">
-                    <h3>${section.subtitle}</h3>
-                    <div class="text-block">${generatePlaceholderText(120)}</div>
-                </div>
-            `;
-            
-            positionIndex += 2;
-        });
-        
-        // Fragments supplémentaires en mosaïque organique avec meilleur espacement
-        for (let i = 0; i < 8; i++) {
-            const pos1 = organicPositions[(positionIndex) % organicPositions.length];
-            const pos2 = organicPositions[(positionIndex + 1) % organicPositions.length];
-            
-            // Image fragment - espacement vertical augmenté
-            html += `
-                <div class="image-block" 
-                     style="position: absolute; left: ${pos1.x}px; top: ${baseY + pos1.y + 400}px; width: 280px; height: 200px;">
-                    FRAG_IMG_${i + 1}
-                </div>
-            `;
-            
-            // Texte fragment - séparation plus importante des images
-            html += `
-                <div class="mosaic-block mosaic-small" 
-                     style="position: absolute; left: ${pos2.x}px; top: ${baseY + pos2.y + 520}px;">
-                    <h3>FRAG_${String(i + 1).padStart(2, '0')}</h3>
-                    <div class="text-block">${generatePlaceholderText(80)}</div>
-                </div>
-            `;
-            
-            positionIndex += 2;
-        }
-        
-        html += '</div>'; // Fin work-cluster
-    });
-    
-    container.innerHTML = html;
-}
-        // Système de sauvegarde des positions personnalisées
-        let customPositions = {};
-        let isDragging = false;
-        let currentDragElement = null;
-        let dragOffset = { x: 0, y: 0 };
-
-        // Charger les positions sauvegardées (en mémoire pour cette session)
-        function loadCustomPositions() {
-            // Les positions sont stockées en mémoire pendant la session
-            if (!window.portfolioPositions) {
-                window.portfolioPositions = {};
-            }
-            customPositions = window.portfolioPositions;
-        }
-
-        // Sauvegarder les positions (en mémoire pour cette session)
-        function saveCustomPositions() {
-            window.portfolioPositions = customPositions;
-        }
-
-        // Initialiser le drag & drop
-        function initDragAndDrop() {
-            const blocks = document.querySelectorAll('.mosaic-block, .image-block');
-            
-            blocks.forEach(block => {
-                block.draggable = true;
-                
-                block.addEventListener('dragstart', (e) => {
-                    isDragging = true;
-                    currentDragElement = block;
-                    block.classList.add('dragging');
-                    
-                    const rect = block.getBoundingClientRect();
-                    const containerRect = block.parentElement.getBoundingClientRect();
-                    
-                    dragOffset.x = e.clientX - rect.left;
-                    dragOffset.y = e.clientY - rect.top;
-                    
-                    // Créer une image de drag transparente
-                    const dragImage = new Image();
-                    dragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
-                    e.dataTransfer.setDragImage(dragImage, 0, 0);
-                });
-                
-                block.addEventListener('dragend', (e) => {
-                    isDragging = false;
-                    block.classList.remove('dragging');
-                    currentDragElement = null;
-                });
-            });
-            
-            // Gestion du drop sur le container
-            const container = document.querySelector('.mosaic-container');
-            if (container) {
-                container.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                });
-                
-                container.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    
-                    if (currentDragElement) {
-                        const containerRect = container.getBoundingClientRect();
-                        const newX = e.clientX - containerRect.left - dragOffset.x;
-                        const newY = e.clientY - containerRect.top - dragOffset.y + container.scrollTop;
-                        
-                        // Contraintes pour éviter de sortir du container
-                        const maxX = container.clientWidth - currentDragElement.offsetWidth;
-                        const maxY = container.scrollHeight - currentDragElement.offsetHeight;
-                        
-                        const finalX = Math.max(0, Math.min(newX, maxX));
-                        const finalY = Math.max(0, Math.min(newY, maxY));
-                        
-                        // Appliquer la nouvelle position
-                        currentDragElement.style.left = finalX + 'px';
-                        currentDragElement.style.top = finalY + 'px';
-                        
-                        // Sauvegarder la position
-                        const blockId = currentDragElement.dataset.blockId;
-                        if (blockId) {
-                            if (!customPositions[getCurrentLocationId()]) {
-                                customPositions[getCurrentLocationId()] = {};
-                            }
-                            customPositions[getCurrentLocationId()][blockId] = {
-                                x: finalX,
-                                y: finalY
-                            };
-                            saveCustomPositions();
-                        }
-                    }
-                });
-            }
-        }
-
-        // Obtenir l'ID de la location courante
-        function getCurrentLocationId() {
-            return document.querySelector('.overlay-title')?.textContent || 'default';
-        }
-
-        // Appliquer les positions personnalisées
-        function applyCustomPositions(locationId) {
-            if (customPositions[locationId]) {
-                Object.keys(customPositions[locationId]).forEach(blockId => {
-                    const block = document.querySelector(`[data-block-id="${blockId}"]`);
-                    if (block) {
-                        const pos = customPositions[locationId][blockId];
-                        block.style.left = pos.x + 'px';
-                        block.style.top = pos.y + 'px';
-                    }
-                });
-            }
-        }
 
         // Système d'informations contextuelles simplifié
         const biomeDataInfo = {
@@ -1673,63 +1406,44 @@ function generateAllWorkContent() {
             return { biome: 'temperate', lat, lon };
         }
         
-        // Données système avec vraies images - COORDONNÉES MODIFIÉES
+        // Configuration GitHub pour les images
+        const GITHUB_REPO_BASE = 'https://raw.githubusercontent.com/NotLostFuturz/Site2/main/images/locations/';
+        
+        // Fonction pour générer automatiquement l'URL de l'image
+        function getImageUrl(locationId) {
+            return `${GITHUB_REPO_BASE}${locationId}.jpg`;
+        }
+
+        // Données système avec images automatiques - COORDONNÉES ET NOMS MODIFIÉS
         const locations = [
             {
-                id: 'mexico_death_valley',
-                name: 'DESERT_MATRIX.001',
+                id: 'tenochtitlan_ii',
+                name: 'Tenochtitlan II',
                 coords: [-106.0, 28.0], // Désert de Chihuahua, Mexique
+                pdfUrl: null, // Pas encore de PDF
                 preview: {
-                    text: 'DESERT_EXTREME - MEXICO_ZONE',
-                    image: 'images/locations/location1/main.jpg'
-                },
-                detail: {
-                    title: 'MEXICO_DESERT_SYSTEM.LOG',
-                    sections: [
-                        {
-                            subtitle: 'SPECIES_COUNT',
-                            text: 'DATABASE: 40,000 PLANT_SPECIES | 1,300 BIRD_TYPES | 3,000 FISH_VARIANTS. SYSTEM_STATUS: CRITICAL_IMPORTANCE.',
-                            imagePlaceholder: 'images/locations/location1/detail1.jpg'
-                        },
-                        {
-                            subtitle: 'OXYGEN_OUTPUT',
-                            text: 'PROCESSING: 20% GLOBAL_O2_PRODUCTION. WATER_DISCHARGE: 209,000M³/SEC. STATUS: ACTIVE_MONITORING.',
-                            imagePlaceholder: 'images/locations/location1/detail2.jpg'
-                        }
-                    ]
+                    text: 'TENOCHTITLAN II - MEXICO_ZONE',
+                    image: getImageUrl('tenochtitlan_ii')
                 }
             },
             {
-                id: 'subsaharan_africa',
-                name: 'SAVANNA_PROTOCOL.002',
+                id: 'oya_maxima',
+                name: 'Oya-Maxima',
                 coords: [2.0, 12.0], // Afrique subsaharienne (Niger/Mali)
+                pdfUrl: 'https://notlostfuturz.github.io/Oya-MaximaII/oya-maxima.pdf',
                 preview: {
-                    text: 'SAHEL_MATRIX - SUBSAHARA',
-                    image: 'images/locations/location2/main.jpg'
-                },
-                detail: {
-                    title: 'SUBSAHARA_SYSTEM.LOG',
-                    sections: [
-                        {
-                            subtitle: 'EXTREME_CONDITIONS',
-                            text: 'TEMP_RANGE: 50°C_DAY | 0°C_NIGHT. PRECIPITATION: <25MM/YEAR. SURVIVAL_MODE: ACTIVATED.',
-                            imagePlaceholder: 'images/locations/location2/detail1.jpg'
-                        },
-                        {
-                            subtitle: 'ADAPTED_LIFEFORMS',
-                            text: 'SPECIES_COUNT: 3000+ ADAPTED_UNITS. FENNEC.EXE | ADDAX.SYS | ROSE_OF_JERICHO.DLL ACTIVE.',
-                            imagePlaceholder: 'images/locations/location2/detail2.jpg'
-                        }
-                    ]
+                    text: 'OYA-MAXIMA - SUBSAHARA',
+                    image: getImageUrl('oya_maxima')
                 }
             },
             {
                 id: 'sarthe_france',
                 name: 'TEMPERATE_NETWORK.003',
-                coords: [0.2, 48.0], // Sarthe, France
+                coords: [0.2, 48.0], // Sarthe, France (gardé pour l'instant)
+                pdfUrl: null,
                 preview: {
                     text: 'TEMPERATE_ZONE - SARTHE_FR',
-                    image: 'images/locations/location3/main.jpg'
+                    image: getImageUrl('sarthe_france')
                 },
                 detail: {
                     title: 'SARTHE_SYSTEM.LOG',
@@ -1737,71 +1451,44 @@ function generateAllWorkContent() {
                         {
                             subtitle: 'NORDIC_ECOSYSTEM',
                             text: 'CONIFER_DOMINANT: SPRUCE.EXE | FIR.SYS | LARCH.DLL. TEMP_RANGE: -50°C TO +20°C.',
-                            imagePlaceholder: 'images/locations/location3/detail1.jpg'
+                            imagePlaceholder: 'IMAGE_PLACEHOLDER'
                         },
                         {
                             subtitle: 'FAUNA_DATABASE',
                             text: 'ACTIVE_SPECIES: BEAR.SYS | LYNX.EXE | MOOSE.DLL | WOLF.NET. MIGRATION_PATTERNS: MONITORED.',
-                            imagePlaceholder: 'images/locations/location3/detail2.jpg'
+                            imagePlaceholder: 'IMAGE_PLACEHOLDER'
                         }
                     ]
                 }
             },
             {
-                id: 'china_central',
-                name: 'ASIA_CLUSTER.004',
-                coords: [104.0, 35.0], // Chine centrale
+                id: 'riviere_perles',
+                name: 'rivière perles',
+                coords: [-69.0, -24.0], // Désert d'Atacama, Chili
+                pdfUrl: null,
                 preview: {
-                    text: 'CHINA_PROTOCOL - CENTRAL_ZONE',
-                    image: 'images/locations/location4/main.jpg'
-                },
-                detail: {
-                    title: 'CHINA_SYSTEM.LOG',
-                    sections: [
-                        {
-                            subtitle: 'MIGRATION_DATA',
-                            text: 'WILDEBEEST: 1.5M_UNITS | ZEBRA: 200K_UNITS. DISTANCE: 3000KM_ANNUAL. STATUS: TRACKING.',
-                            imagePlaceholder: 'images/locations/location4/detail1.jpg'
-                        },
-                        {
-                            subtitle: 'PREDATOR_ARRAY',
-                            text: 'LION: 3000_UNITS | LEOPARD: 1000_UNITS | CHEETAH: 500_UNITS. BALANCE: MAINTAINED.',
-                            imagePlaceholder: 'images/locations/location4/detail2.jpg'
-                        }
-                    ]
+                    text: 'RIVIERE PERLES - ATACAMA_CHILE',
+                    image: getImageUrl('riviere_perles')
                 }
             },
             {
-                id: 'paris_france',
-                name: 'URBAN_MAINFRAME.005',
-                coords: [2.35, 48.85], // Paris, France
+                id: 'luxfer_experience',
+                name: 'Luxfer experience',
+                coords: [15.5, 49.8], // République Tchèque
+                pdfUrl: null,
                 preview: {
-                    text: 'URBAN_SYSTEM - PARIS_MEGALOPOLIS',
-                    image: 'images/locations/location5/main.jpg'
-                },
-                detail: {
-                    title: 'PARIS_SYSTEM.LOG',
-                    sections: [
-                        {
-                            subtitle: 'MARINE_DATABASE',
-                            text: 'CORAL_TYPES: 600 | FISH_SPECIES: 1625 | SHARK_VARIANTS: 133. ECOSYSTEM: COMPLEX.',
-                            imagePlaceholder: 'images/locations/location5/detail1.jpg'
-                        },
-                        {
-                            subtitle: 'SYSTEM_WARNING',
-                            text: 'TEMPERATURE_THREAT: ACTIVE. BLEACHING: 50%_SINCE_1995. STATUS: CRITICAL_MONITORING.',
-                            imagePlaceholder: 'images/locations/location5/detail2.jpg'
-                        }
-                    ]
+                    text: 'LUXFER EXPERIENCE - CZECH_REPUBLIC',
+                    image: getImageUrl('luxfer_experience')
                 }
             },
             {
                 id: 'atlantic_ocean',
                 name: 'OCEAN_TERMINAL.006',
                 coords: [-30.0, 35.0], // Océan Atlantique
+                pdfUrl: null,
                 preview: {
                     text: 'OCEAN_MATRIX - ATLANTIC_SECTOR',
-                    image: 'images/locations/location6/main.jpg'
+                    image: getImageUrl('atlantic_ocean')
                 },
                 detail: {
                     title: 'ATLANTIC_SYSTEM.LOG',
@@ -1809,12 +1496,12 @@ function generateAllWorkContent() {
                         {
                             subtitle: 'POLAR_CONDITIONS',
                             text: 'TEMP_RECORD: -89.2°C. FRESHWATER_STORAGE: 90%_GLOBAL_RESERVES. STATUS: MONITORED.',
-                            imagePlaceholder: 'images/locations/location6/detail1.jpg'
+                            imagePlaceholder: 'IMAGE_PLACEHOLDER'
                         },
                         {
                             subtitle: 'EXTREME_LIFE',
                             text: 'EMPEROR_PENGUIN.EXE | WEDDELL_SEAL.SYS | ANTARCTIC_KRILL.DLL. FOOD_CHAIN: BASE_LEVEL.',
-                            imagePlaceholder: 'images/locations/location6/detail2.jpg'
+                            imagePlaceholder: 'IMAGE_PLACEHOLDER'
                         }
                     ]
                 }
@@ -1989,13 +1676,13 @@ function generateAllWorkContent() {
             return 'temperate';
         }
         
-        // Création points données avec logique mobile/desktop
+        // Création points données avec logique mobile/desktop et liens PDF
         function createLocationPoints() {
             const groups = pointsGroup.selectAll('.location-point')
                 .data(locations)
                 .enter().append('g')
                 .attr('class', 'location-point')
-                .on('click', showDetail);
+                .on('click', handlePointClick);
             
             // Ajouter les événements hover seulement sur desktop
             if (window.innerWidth > 768) {
@@ -2006,6 +1693,20 @@ function generateAllWorkContent() {
                 
             groups.append('circle')
                 .attr('r', 3);
+        }
+        
+        // Gestion du clic sur les points - ouvre PDF ou affiche overlay
+        function handlePointClick(event, d) {
+            if (event) event.stopPropagation();
+            
+            // Si le point a un PDF, l'ouvrir dans un nouvel onglet
+            if (d.pdfUrl) {
+                window.open(d.pdfUrl, '_blank');
+                return;
+            }
+            
+            // Sinon, garder l'ancien comportement pour les points sans PDF
+            showDetail(event, d);
         }
         
         // Mise à jour système
@@ -2085,7 +1786,7 @@ function generateAllWorkContent() {
         
         // Fonctions interface système
         
-        // Aperçu données terminal - image aléatoire dans le globe
+        // Aperçu données terminal - image grande sans bloc
         function showPreview(event, d) {
             // Ne pas afficher sur mobile
             if (window.innerWidth <= 768) return;
@@ -2093,29 +1794,42 @@ function generateAllWorkContent() {
             autoRotate = false;
             
             const preview = document.getElementById('hover-preview');
-            const imageElement = preview.querySelector('.hover-image-simple');
+            const imageElement = preview.querySelector('.hover-image-large');
+            const imgElement = preview.querySelector('#preview-image');
+            const placeholderElement = preview.querySelector('#preview-placeholder');
             
             // Position aléatoire dans l'espace du globe
             const globeSize = Math.min(window.innerWidth, window.innerHeight);
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
-            const radius = globeSize * 0.3; // Dans la zone du globe
+            const radius = globeSize * 0.25; // Zone plus restreinte pour les grandes images
             
             // Position aléatoire dans un cercle
             const angle = Math.random() * Math.PI * 2;
             const distance = Math.random() * radius;
-            const randomX = centerX + Math.cos(angle) * distance - 100; // -100 pour centrer l'image
-            const randomY = centerY + Math.sin(angle) * distance - 75;  // -75 pour centrer l'image
+            const randomX = centerX + Math.cos(angle) * distance - 200; // -200 pour centrer la grande image
+            const randomY = centerY + Math.sin(angle) * distance - 150;  // -150 pour centrer la grande image
             
             // Appliquer la position
             preview.style.left = randomX + 'px';
             preview.style.top = randomY + 'px';
             
-            // Contenu de l'image simple
+            // Gestion de l'image
             if (d.preview.image) {
-                imageElement.innerHTML = `<img src="${d.preview.image}" alt="${d.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                imgElement.src = d.preview.image;
+                imgElement.style.display = 'block';
+                placeholderElement.style.display = 'none';
+                
+                // Gérer les erreurs d'image
+                imgElement.onerror = function() {
+                    imgElement.style.display = 'none';
+                    placeholderElement.style.display = 'block';
+                    placeholderElement.textContent = d.preview.text || d.name;
+                };
             } else {
-                imageElement.textContent = d.preview.text || d.name;
+                imgElement.style.display = 'none';
+                placeholderElement.style.display = 'block';
+                placeholderElement.textContent = d.preview.text || d.name;
             }
             
             preview.classList.add('visible');
@@ -2130,9 +1844,21 @@ function generateAllWorkContent() {
             document.getElementById('hover-preview').classList.remove('visible');
         }
         
-        // Affichage mosaïque système avec drag & drop interactif
+        // Affichage mosaïque système avec drag & drop interactif (pour points sans PDF)
         function showDetail(event, d) {
             if (event) event.stopPropagation();
+            
+            // Si le point a un PDF, rediriger vers le PDF
+            if (d.pdfUrl) {
+                window.open(d.pdfUrl, '_blank');
+                return;
+            }
+            
+            // Vérifier si le point a des détails à afficher
+            if (!d.detail || !d.detail.sections) {
+                console.log('Aucun détail disponible pour ce point');
+                return;
+            }
             
             const overlay = document.getElementById('detail-overlay');
             const content = overlay.querySelector('.detail-content');
@@ -2275,6 +2001,119 @@ function generateAllWorkContent() {
             autoRotate = true;
         }
         
+        // Système de sauvegarde des positions personnalisées
+        let customPositions = {};
+        let isDragging = false;
+        let currentDragElement = null;
+        let dragOffset = { x: 0, y: 0 };
+
+        // Charger les positions sauvegardées (en mémoire pour cette session)
+        function loadCustomPositions() {
+            // Les positions sont stockées en mémoire pendant la session
+            if (!window.portfolioPositions) {
+                window.portfolioPositions = {};
+            }
+            customPositions = window.portfolioPositions;
+        }
+
+        // Sauvegarder les positions (en mémoire pour cette session)
+        function saveCustomPositions() {
+            window.portfolioPositions = customPositions;
+        }
+
+        // Initialiser le drag & drop
+        function initDragAndDrop() {
+            const blocks = document.querySelectorAll('.mosaic-block, .image-block');
+            
+            blocks.forEach(block => {
+                block.draggable = true;
+                
+                block.addEventListener('dragstart', (e) => {
+                    isDragging = true;
+                    currentDragElement = block;
+                    block.classList.add('dragging');
+                    
+                    const rect = block.getBoundingClientRect();
+                    const containerRect = block.parentElement.getBoundingClientRect();
+                    
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                    
+                    // Créer une image de drag transparente
+                    const dragImage = new Image();
+                    dragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
+                    e.dataTransfer.setDragImage(dragImage, 0, 0);
+                });
+                
+                block.addEventListener('dragend', (e) => {
+                    isDragging = false;
+                    block.classList.remove('dragging');
+                    currentDragElement = null;
+                });
+            });
+            
+            // Gestion du drop sur le container
+            const container = document.querySelector('.mosaic-container');
+            if (container) {
+                container.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+                
+                container.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    
+                    if (currentDragElement) {
+                        const containerRect = container.getBoundingClientRect();
+                        const newX = e.clientX - containerRect.left - dragOffset.x;
+                        const newY = e.clientY - containerRect.top - dragOffset.y + container.scrollTop;
+                        
+                        // Contraintes pour éviter de sortir du container
+                        const maxX = container.clientWidth - currentDragElement.offsetWidth;
+                        const maxY = container.scrollHeight - currentDragElement.offsetHeight;
+                        
+                        const finalX = Math.max(0, Math.min(newX, maxX));
+                        const finalY = Math.max(0, Math.min(newY, maxY));
+                        
+                        // Appliquer la nouvelle position
+                        currentDragElement.style.left = finalX + 'px';
+                        currentDragElement.style.top = finalY + 'px';
+                        
+                        // Sauvegarder la position
+                        const blockId = currentDragElement.dataset.blockId;
+                        if (blockId) {
+                            if (!customPositions[getCurrentLocationId()]) {
+                                customPositions[getCurrentLocationId()] = {};
+                            }
+                            customPositions[getCurrentLocationId()][blockId] = {
+                                x: finalX,
+                                y: finalY
+                            };
+                            saveCustomPositions();
+                        }
+                    }
+                });
+            }
+        }
+
+        // Obtenir l'ID de la location courante
+        function getCurrentLocationId() {
+            return document.querySelector('.overlay-title')?.textContent || 'default';
+        }
+
+        // Appliquer les positions personnalisées
+        function applyCustomPositions(locationId) {
+            if (customPositions[locationId]) {
+                Object.keys(customPositions[locationId]).forEach(blockId => {
+                    const block = document.querySelector(`[data-block-id="${blockId}"]`);
+                    if (block) {
+                        const pos = customPositions[locationId][blockId];
+                        block.style.left = pos.x + 'px';
+                        block.style.top = pos.y + 'px';
+                    }
+                });
+            }
+        }
+        
         // Fermeture système
         function closeDetailOverlay() {
             document.getElementById('detail-overlay').classList.remove('visible');
@@ -2306,10 +2145,13 @@ function generateAllWorkContent() {
                 // Desktop: réactiver les events hover
                 pointsGroup.selectAll('.location-point')
                     .on('mouseenter', showPreview)
-                    .on('mouseleave', hidePreview);
+                    .on('mouseleave', hidePreview)
+                    .on('click', handlePointClick);
             } else {
-                // Mobile: masquer les previews actives
+                // Mobile: masquer les previews actives et garder le clic
                 document.getElementById('hover-preview').classList.remove('visible');
+                pointsGroup.selectAll('.location-point')
+                    .on('click', handlePointClick);
             }
         });
     </script>
